@@ -2,12 +2,13 @@
 
 ## ✅ Complete
 
-### Frontend (55/55 tests passing)
+### Frontend (62/62 tests passing)
 - Tab-based UI with Monaco editor
 - Schema compilation with error handling
 - Code viewer (JS/Ruby/LIR tabs)
-- Auto-generated input forms
+- Auto-generated input forms with textarea for arrays/objects
 - ASCII output rendering
+- Example selector with 7 examples
 - Full test coverage
 
 ### Running
@@ -24,60 +25,90 @@ cd ../web && rails s
 ## 🧪 Test It
 
 1. Open http://localhost:5173
-2. Edit schema in Schema tab
-3. Click "Compile"
-4. View compiled code in Compiled Code tab
-5. Switch to Execute tab
-6. Fill form and click "Execute"
-7. See ASCII-rendered output
+2. Select example from dropdown
+3. Edit schema in Schema tab
+4. Click "Compile"
+5. View compiled code in Compiled Code tab
+6. Switch to Execute tab
+7. Edit input values and click "Execute"
+8. See ASCII-rendered output
 
-## 📋 Next Enhancements
+## 📋 Next: Replace InputForm with Monaco JSON Editor
 
-### 1. Refactor for Multiple Execution Modes
+### Problem
+Current InputForm is confusing:
+- Individual JSON textareas per complex field (arrays, nested hashes)
+- Hard to edit nested structures
+- Not intuitive for users
 
-**Problem**: ExecuteTab is hardcoded for Notebook mode only.
+### Approved Design: Single JSON Editor
 
-**Solution**: Refactor to support Canvas and Simulation modes.
+Replace the per-field InputForm with a single Monaco editor showing the entire input JSON object.
 
+### Implementation Plan
+
+#### 1. Install Monaco Editor React Wrapper
+```bash
+npm install @monaco-editor/react
 ```
-src/components/executors/
-├── NotebookExecutor.tsx    (current ExecuteTab logic)
-├── CanvasExecutor.tsx      (future: Game of Life with play/pause)
-└── SimulationExecutor.tsx  (future: Monte Carlo with histogram)
+
+#### 2. Create JsonInputEditor Component
+**File:** `src/components/JsonInputEditor.tsx`
+
+**Features:**
+- Wraps `@monaco-editor/react`
+- Props: `value` (JSON object), `onChange` (parsed object callback), `onError` (validation errors)
+- Language: `json`
+- Validation: Real-time JSON parsing, show errors inline
+- Height: ~400px
+- Theme: Match app theme
+
+**API:**
+```typescript
+interface JsonInputEditorProps {
+  value: Record<string, any>;
+  onChange: (value: Record<string, any>) => void;
+  onError?: (error: string | null) => void;
+  height?: string;
+}
 ```
 
-**Steps**:
-1. Create `src/examples/` with Example metadata (mode, schema_src, config)
-2. Add example selector dropdown in header
-3. Extract NotebookExecutor from ExecuteTab
-4. Refactor ExecuteTab to route by mode:
-   ```typescript
-   switch(mode) {
-     case 'notebook': return <NotebookExecutor />
-     case 'canvas': return <CanvasExecutor />
-     case 'simulation': return <SimulationExecutor />
-   }
-   ```
+#### 3. Update ExecuteTab
+- Remove `InputForm` import
+- Add `JsonInputEditor` import
+- Replace `<InputForm>` with `<JsonInputEditor>`
+- Initialize with `example.base_input`
 
-### 2. Example Schemas
+#### 4. Pass Example to ExecuteTab
+In `App.tsx`, pass `currentExample` to `ExecuteTab` for initial input.
 
-Pre-built examples with mode detection:
-- **Notebook**: Basic arithmetic, shopping cart
-- **Canvas**: Game of Life grid (2D, animated)
-- **Simulation**: Monte Carlo pricing (random inputs, statistics)
+#### 5. Tests (TDD)
+Write tests first:
+- Renders Monaco editor
+- Parses valid JSON and calls onChange
+- Catches invalid JSON and calls onError
+- Displays formatted JSON
 
-### 3. Future Mode Implementation
+### Benefits
+- Simpler UX: one editor, entire input visible
+- More powerful: Monaco autocomplete, error highlighting, formatting
+- Uses example data: `base_input` loads automatically
+- Clean architecture: single source of truth
 
-**Canvas Mode** - For animations (Game of Life)
-- Play/pause/step controls
-- Speed slider
-- Web worker for animation loop
-
-**Simulation Mode** - For Monte Carlo
-- Progress bar
-- Histogram visualization
-- Statistics display (mean, std, p95)
-- Web worker for batch execution
+### Monaco Configuration
+```typescript
+<Editor
+  height="400px"
+  language="json"
+  theme="vs-dark"
+  options={{
+    minimap: { enabled: false },
+    fontSize: 14,
+    tabSize: 2,
+    formatOnPaste: true,
+  }}
+/>
+```
 
 ## 📁 Project Structure
 
@@ -87,14 +118,20 @@ web-v2/
 │   ├── api/compile.ts           API client
 │   ├── execution/eval-module.ts JS execution
 │   ├── rendering/               ASCII renderers
+│   ├── examples/                Example definitions
+│   │   ├── index.ts
+│   │   ├── arithmetic.ts
+│   │   ├── array-operations.ts
+│   │   └── ... (7 total)
 │   ├── components/
 │   │   ├── SchemaEditor.tsx     Monaco editor
 │   │   ├── CompiledCodeView.tsx Code tabs
 │   │   ├── ExecuteTab.tsx       Execution UI
-│   │   ├── InputForm.tsx        Form generator
+│   │   ├── InputForm.tsx        Form generator (to be replaced)
+│   │   ├── ExampleSelector.tsx  Example dropdown
 │   │   └── OutputDisplay.tsx    Output renderer
 │   └── App.tsx                  Main app
-├── tests                        55 tests
+├── tests                        62 tests
 └── docs/
     ├── DESIGN.md                Architecture
     └── NEXT_STEPS.md            This file
@@ -102,6 +139,6 @@ web-v2/
 
 ## 🎯 Current Status
 
-**Ready for use!** Start the backend and test the full flow.
+**Working:** All features functional, 62 tests passing.
 
-All core features implemented. Future work is enhancements only.
+**Next session:** Implement Monaco JSON editor to replace InputForm.

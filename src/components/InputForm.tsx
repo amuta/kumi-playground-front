@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { InputField } from '@/types';
 
 interface InputFormProps {
@@ -7,6 +8,8 @@ interface InputFormProps {
 }
 
 export function InputForm({ schema, values, onChange }: InputFormProps) {
+  const [textValues, setTextValues] = useState<Record<string, string>>({});
+
   const handleChange = (name: string, value: any) => {
     onChange({ ...values, [name]: value });
   };
@@ -17,6 +20,7 @@ export function InputForm({ schema, values, onChange }: InputFormProps) {
         case 'integer':
           return (
             <input
+              id={name}
               type="number"
               step="1"
               value={values[name] ?? ''}
@@ -28,6 +32,7 @@ export function InputForm({ schema, values, onChange }: InputFormProps) {
         case 'float':
           return (
             <input
+              id={name}
               type="number"
               step="any"
               value={values[name] ?? ''}
@@ -39,6 +44,7 @@ export function InputForm({ schema, values, onChange }: InputFormProps) {
         case 'string':
           return (
             <input
+              id={name}
               type="text"
               value={values[name] ?? ''}
               onChange={(e) => handleChange(name, e.target.value)}
@@ -49,6 +55,7 @@ export function InputForm({ schema, values, onChange }: InputFormProps) {
         case 'boolean':
           return (
             <input
+              id={name}
               type="checkbox"
               checked={values[name] ?? false}
               onChange={(e) => handleChange(name, e.target.checked)}
@@ -56,9 +63,38 @@ export function InputForm({ schema, values, onChange }: InputFormProps) {
             />
           );
 
+        case 'array':
+        case 'object':
+          const currentText = name in textValues
+            ? textValues[name]
+            : (values[name] !== undefined ? JSON.stringify(values[name], null, 2) : '');
+
+          return (
+            <textarea
+              id={name}
+              value={currentText}
+              onChange={(e) => {
+                const newText = e.target.value;
+                setTextValues({ ...textValues, [name]: newText });
+
+                try {
+                  const parsed = JSON.parse(newText);
+                  handleChange(name, parsed);
+                  delete textValues[name];
+                } catch {
+                  // Keep text in local state until valid JSON
+                }
+              }}
+              className="w-full px-3 py-2 border rounded-md bg-background font-mono text-sm"
+              placeholder="JSON value"
+              rows={6}
+            />
+          );
+
         default:
           return (
             <input
+              id={name}
               type="text"
               value={JSON.stringify(values[name] ?? '')}
               onChange={(e) => {
@@ -76,9 +112,9 @@ export function InputForm({ schema, values, onChange }: InputFormProps) {
     }
 
     return (
-      <input
-        type="text"
-        value={JSON.stringify(values[name] ?? '')}
+      <textarea
+        id={name}
+        value={values[name] !== undefined ? JSON.stringify(values[name], null, 2) : ''}
         onChange={(e) => {
           try {
             handleChange(name, JSON.parse(e.target.value));
@@ -88,6 +124,7 @@ export function InputForm({ schema, values, onChange }: InputFormProps) {
         }}
         className="w-full px-3 py-2 border rounded-md bg-background font-mono text-sm"
         placeholder="JSON value"
+        rows={6}
       />
     );
   };
@@ -96,7 +133,7 @@ export function InputForm({ schema, values, onChange }: InputFormProps) {
     <div className="space-y-4">
       {Object.entries(schema).map(([name, field]) => (
         <div key={name}>
-          <label className="block text-sm font-medium mb-2">{name}</label>
+          <label htmlFor={name} className="block text-sm font-medium mb-2">{name}</label>
           {renderField(name, field)}
         </div>
       ))}
