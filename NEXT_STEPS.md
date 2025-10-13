@@ -33,26 +33,40 @@ cd ../web && rails s
 
 ## 📋 Next Enhancements
 
-### Example Schemas
-Add dropdown with pre-built examples:
-- Basic arithmetic (x + y)
-- Shopping cart with totals
-- Game of Life grid
+### 1. Refactor for Multiple Execution Modes
 
-Implementation:
-```typescript
-// src/examples/index.ts
-export const examples = [
-  {
-    id: 'arithmetic',
-    title: 'Basic Arithmetic',
-    schema_src: `schema do ... end`,
-  },
-  // ...
-]
+**Problem**: ExecuteTab is hardcoded for Notebook mode only.
+
+**Solution**: Refactor to support Canvas and Simulation modes.
+
+```
+src/components/executors/
+├── NotebookExecutor.tsx    (current ExecuteTab logic)
+├── CanvasExecutor.tsx      (future: Game of Life with play/pause)
+└── SimulationExecutor.tsx  (future: Monte Carlo with histogram)
 ```
 
-### Future Modes
+**Steps**:
+1. Create `src/examples/` with Example metadata (mode, schema_src, config)
+2. Add example selector dropdown in header
+3. Extract NotebookExecutor from ExecuteTab
+4. Refactor ExecuteTab to route by mode:
+   ```typescript
+   switch(mode) {
+     case 'notebook': return <NotebookExecutor />
+     case 'canvas': return <CanvasExecutor />
+     case 'simulation': return <SimulationExecutor />
+   }
+   ```
+
+### 2. Example Schemas
+
+Pre-built examples with mode detection:
+- **Notebook**: Basic arithmetic, shopping cart
+- **Canvas**: Game of Life grid (2D, animated)
+- **Simulation**: Monte Carlo pricing (random inputs, statistics)
+
+### 3. Future Mode Implementation
 
 **Canvas Mode** - For animations (Game of Life)
 - Play/pause/step controls
