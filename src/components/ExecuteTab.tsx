@@ -1,20 +1,29 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { InputForm } from '@/components/InputForm';
+import { JsonInputEditor } from '@/components/JsonInputEditor';
 import { OutputDisplay } from '@/components/OutputDisplay';
 import { evalCompiledModule, executeAllOutputs } from '@/execution/eval-module';
 import type { CompileResponse } from '@/api/compile';
+import type { Example } from '@/types';
 
 interface ExecuteTabProps {
   compiledResult: CompileResponse;
+  example?: Example;
 }
 
-export function ExecuteTab({ compiledResult }: ExecuteTabProps) {
+export function ExecuteTab({ compiledResult, example }: ExecuteTabProps) {
   const [inputValues, setInputValues] = useState<Record<string, any>>({});
   const [executionResult, setExecutionResult] = useState<Record<string, any> | null>(null);
   const [executionError, setExecutionError] = useState<string | null>(null);
   const [isExecuting, setIsExecuting] = useState(false);
+  const [jsonError, setJsonError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (example?.base_input) {
+      setInputValues(example.base_input);
+    }
+  }, [example]);
 
   const handleExecute = async () => {
     setIsExecuting(true);
@@ -43,12 +52,15 @@ export function ExecuteTab({ compiledResult }: ExecuteTabProps) {
           <CardTitle>Input</CardTitle>
         </CardHeader>
         <CardContent>
-          <InputForm
-            schema={compiledResult.input_form_schema}
-            values={inputValues}
+          <JsonInputEditor
+            value={inputValues}
             onChange={setInputValues}
+            onError={setJsonError}
           />
-          <Button onClick={handleExecute} disabled={isExecuting} className="mt-4" size="lg">
+          {jsonError && (
+            <p className="text-destructive text-sm mt-2">Invalid JSON: {jsonError}</p>
+          )}
+          <Button onClick={handleExecute} disabled={isExecuting || !!jsonError} className="mt-4" size="lg">
             {isExecuting ? 'Executing...' : 'Execute'}
           </Button>
         </CardContent>
@@ -74,6 +86,7 @@ export function ExecuteTab({ compiledResult }: ExecuteTabProps) {
             <OutputDisplay
               results={executionResult}
               outputSchema={compiledResult.output_schema}
+              example={example}
             />
           </CardContent>
         </Card>
