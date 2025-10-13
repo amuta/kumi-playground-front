@@ -40,9 +40,9 @@ export function SchemaEditor({
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-200px)]">
-      <Card className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex-1">
+    <div className="flex flex-col gap-4">
+      <Card className="overflow-hidden">
+        <div className="h-[600px]">
           <Editor
             height="100%"
             defaultLanguage="ruby"
@@ -60,7 +60,7 @@ export function SchemaEditor({
         </div>
       </Card>
 
-      <div className="mt-4 flex items-center gap-4">
+      <div className="flex items-center gap-4">
         <Button onClick={handleCompile} disabled={isCompiling} size="lg">
           {isCompiling ? 'Compiling...' : 'Compile'}
         </Button>
