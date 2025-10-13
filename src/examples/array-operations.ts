@@ -31,4 +31,11 @@ end`,
     ],
     tax_rate: 0.08,
   },
+  visualizations: {
+    subtotals: 'table',
+    expensive_items: 'table',
+    electronics: 'table',
+    discounted_price: 'table',
+    is_valid_quantity: 'table',
+  },
 };
