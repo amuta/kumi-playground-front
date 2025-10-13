@@ -46,7 +46,6 @@ export function OutputDisplay({ results, example }: OutputDisplayProps) {
     <div className="space-y-6">
       {Object.keys(jsonOutputs).length > 0 && (
         <div>
-          <div className="font-medium mb-2">Outputs:</div>
           <JsonOutputViewer value={jsonOutputs} />
         </div>
       )}
