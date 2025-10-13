@@ -1,10 +1,12 @@
 import type { CompileResult } from '../types';
 
+export type CompileResponse = CompileResult;
+
 const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE) || 'http://localhost:3000';
 
-export async function compileKumiSchema(
+export async function compileSchema(
   schemaSrc: string
-): Promise<CompileResult> {
+): Promise<CompileResponse> {
   const response = await fetch(`${API_BASE}/api/kumi/compile`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -18,3 +20,5 @@ export async function compileKumiSchema(
 
   return response.json();
 }
+
+export const compileKumiSchema = compileSchema;

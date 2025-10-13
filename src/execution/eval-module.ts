@@ -2,7 +2,7 @@ import type { OutputField } from '../types';
 
 export async function evalCompiledModule(jsSrc: string): Promise<any> {
   try {
-    const dataUrl = `data:text/javascript;base64,${Buffer.from(jsSrc).toString('base64')}`;
+    const dataUrl = `data:text/javascript;base64,${btoa(jsSrc)}`;
     const module = await import(/* @vite-ignore */ dataUrl);
     return module;
   } catch (error) {
