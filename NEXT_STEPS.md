@@ -2,12 +2,13 @@
 
 ## ✅ Complete
 
-### Frontend (62/62 tests passing)
+### Frontend (76 tests passing)
 - Tab-based UI with Monaco editor
 - Schema compilation with error handling
 - Code viewer (JS/Ruby/LIR tabs)
-- Auto-generated input forms with textarea for arrays/objects
-- ASCII output rendering
+- JSON input editor (Monaco-based)
+- JsonOutputViewer component (read-only JSON display with edge case handling)
+- ASCII output rendering (table, grid)
 - Example selector with 7 examples
 - Full test coverage
 
@@ -30,84 +31,81 @@ cd ../web && rails s
 4. Click "Compile"
 5. View compiled code in Compiled Code tab
 6. Switch to Execute tab
-7. Edit input values and click "Execute"
-8. See ASCII-rendered output
+7. Edit input JSON in Monaco editor
+8. Click "Execute"
+9. See ASCII-rendered output
 
-## 📋 Next: Replace InputForm with Monaco JSON Editor
+## 📋 Next: JSON-First Visualization System
 
-### Problem
-Current InputForm is confusing:
-- Individual JSON textareas per complex field (arrays, nested hashes)
-- Hard to edit nested structures
-- Not intuitive for users
+### Design Decisions (from brainstorming session)
 
-### Approved Design: Single JSON Editor
+**Architecture:**
+- JSON is the base data format (model layer)
+- Visualizations are presentation layer transformations
+- No inference logic - explicit configuration only
+- Default: JSON viewer (Monaco) for all outputs
+- Opt-in: Examples configure visualizations per output
 
-Replace the per-field InputForm with a single Monaco editor showing the entire input JSON object.
+**Why this approach:**
+1. **Predictable** - JSON unless explicitly configured otherwise
+2. **Less magic** - No axes-based auto-detection to understand
+3. **Scales better** - Complex schemas won't trigger unexpected visualizations
+4. **Testable** - Visualizations are pure functions: JSON → rendered output
+5. **Flexible** - Easy to add new visualization types
 
-### Implementation Plan
+**Implementation Plan:** `docs/plans/2025-10-13-json-first-visualizations.md`
 
-#### 1. Install Monaco Editor React Wrapper
+### Current Status
+
+**Completed:**
+- ✅ Task 1: JsonOutputViewer component with robust edge case handling (11 tests)
+- ✅ Design brainstorming and architecture decisions
+- ✅ Detailed implementation plan created
+
+**Ready to implement:**
+- Task 2: Add visualizations to Example type
+- Task 3: Create Inline Visualizer Component
+- Task 4: Create Table Visualizer Component
+- Task 5: Create Grid Visualizer Component
+- Task 6: Refactor OutputDisplay to use Visualizer Registry
+- Task 7: Update ExecuteTab to pass example to OutputDisplay
+- Task 8: Update example files with visualization configs
+- Task 9: Run full test suite and manual verification
+- Task 10: Update documentation
+
+**To start implementation:**
 ```bash
-npm install @monaco-editor/react
+# In new session, execute the plan:
+# Read: docs/plans/2025-10-13-json-first-visualizations.md
+# Continue from Task 2
 ```
 
-#### 2. Create JsonInputEditor Component
-**File:** `src/components/JsonInputEditor.tsx`
+### Visualization System Overview
 
-**Features:**
-- Wraps `@monaco-editor/react`
-- Props: `value` (JSON object), `onChange` (parsed object callback), `onError` (validation errors)
-- Language: `json`
-- Validation: Real-time JSON parsing, show errors inline
-- Height: ~400px
-- Theme: Match app theme
-
-**API:**
 ```typescript
-interface JsonInputEditorProps {
-  value: Record<string, any>;
-  onChange: (value: Record<string, any>) => void;
-  onError?: (error: string | null) => void;
-  height?: string;
+// Example configuration
+{
+  id: 'arithmetic',
+  schema_src: '...',
+  base_input: { x: 10, y: 5 },
+  visualizations: {
+    sum: 'inline',      // Simple inline value
+    history: 'table',   // ASCII table
+    matrix: 'grid',     // ASCII grid
+    // anything not specified: 'json' (default)
+  }
 }
 ```
 
-#### 3. Update ExecuteTab
-- Remove `InputForm` import
-- Add `JsonInputEditor` import
-- Replace `<InputForm>` with `<JsonInputEditor>`
-- Initialize with `example.base_input`
+**Visualization Types:**
+- `json` - Monaco editor (read-only), formatted JSON
+- `inline` - Simple inline value display
+- `table` - ASCII table for 1D arrays
+- `grid` - ASCII grid for 2D arrays
 
-#### 4. Pass Example to ExecuteTab
-In `App.tsx`, pass `currentExample` to `ExecuteTab` for initial input.
-
-#### 5. Tests (TDD)
-Write tests first:
-- Renders Monaco editor
-- Parses valid JSON and calls onChange
-- Catches invalid JSON and calls onError
-- Displays formatted JSON
-
-### Benefits
-- Simpler UX: one editor, entire input visible
-- More powerful: Monaco autocomplete, error highlighting, formatting
-- Uses example data: `base_input` loads automatically
-- Clean architecture: single source of truth
-
-### Monaco Configuration
-```typescript
-<Editor
-  height="400px"
-  language="json"
-  theme="vs-dark"
-  options={{
-    minimap: { enabled: false },
-    fontSize: 14,
-    tabSize: 2,
-    formatOnPaste: true,
-  }}
-/>
+**Data Flow:**
+```
+results (JSON) → check example.visualizations[name] → select visualizer → render
 ```
 
 ## 📁 Project Structure
@@ -118,6 +116,9 @@ web-v2/
 │   ├── api/compile.ts           API client
 │   ├── execution/eval-module.ts JS execution
 │   ├── rendering/               ASCII renderers
+│   │   ├── ascii-table.ts
+│   │   ├── ascii-grid.ts
+│   │   └── ascii-histogram.ts
 │   ├── examples/                Example definitions
 │   │   ├── index.ts
 │   │   ├── arithmetic.ts
@@ -127,18 +128,28 @@ web-v2/
 │   │   ├── SchemaEditor.tsx     Monaco editor
 │   │   ├── CompiledCodeView.tsx Code tabs
 │   │   ├── ExecuteTab.tsx       Execution UI
-│   │   ├── InputForm.tsx        Form generator (to be replaced)
+│   │   ├── JsonInputEditor.tsx  Input editor
+│   │   ├── JsonOutputViewer.tsx JSON display (NEW)
+│   │   ├── OutputDisplay.tsx    Output renderer (to be refactored)
 │   │   ├── ExampleSelector.tsx  Example dropdown
-│   │   └── OutputDisplay.tsx    Output renderer
+│   │   └── visualizers/         (to be created)
+│   │       ├── InlineValue.tsx
+│   │       ├── TableVisualizer.tsx
+│   │       └── GridVisualizer.tsx
 │   └── App.tsx                  Main app
-├── tests                        62 tests
+├── tests                        76 tests
 └── docs/
     ├── DESIGN.md                Architecture
-    └── NEXT_STEPS.md            This file
+    ├── NEXT_STEPS.md            This file
+    └── plans/
+        └── 2025-10-13-json-first-visualizations.md
+
 ```
 
 ## 🎯 Current Status
 
-**Working:** All features functional, 62 tests passing.
+**Working:** All features functional, 76 tests passing.
 
-**Next session:** Implement Monaco JSON editor to replace InputForm.
+**In Progress:** JSON-first visualization system design complete, Task 1 implemented.
+
+**Next Session:** Continue with Task 2 using docs/plans/2025-10-13-json-first-visualizations.md

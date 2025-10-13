@@ -16,9 +16,4 @@ export const shoppingCart: Example = {
   value :total, subtotal + tax
 end`,
   base_input: { price: 25, quantity: 3, tax_rate: 0.08 },
-  visualizations: {
-    subtotal: 'inline',
-    tax: 'inline',
-    total: 'inline',
-  },
 };

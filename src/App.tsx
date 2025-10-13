@@ -74,7 +74,7 @@ export function App() {
           </TabsContent>
 
           <TabsContent value="execute" className="mt-4">
-            {compiledResult && <ExecuteTab compiledResult={compiledResult} />}
+            {compiledResult && <ExecuteTab compiledResult={compiledResult} example={currentExample} />}
           </TabsContent>
         </Tabs>
       </main>

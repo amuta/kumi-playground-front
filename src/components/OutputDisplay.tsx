@@ -1,6 +1,5 @@
 import type { OutputField, Example, VisualizationType } from '@/types';
 import { JsonOutputViewer } from './JsonOutputViewer';
-import { InlineValue } from './visualizers/InlineValue';
 import { TableVisualizer } from './visualizers/TableVisualizer';
 import { GridVisualizer } from './visualizers/GridVisualizer';
 
@@ -12,7 +11,6 @@ interface OutputDisplayProps {
 
 const visualizers = {
   json: JsonOutputViewer,
-  inline: InlineValue,
   table: TableVisualizer,
   grid: GridVisualizer,
 } as const;

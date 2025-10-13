@@ -20,7 +20,7 @@ export type CompileResult = {
 
 export type ExampleMode = 'notebook' | 'canvas' | 'simulation';
 
-export type VisualizationType = 'json' | 'inline' | 'table' | 'grid';
+export type VisualizationType = 'json' | 'table' | 'grid';
 
 export type CanvasConfig = {
   render: 'grid2d';

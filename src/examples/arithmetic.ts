@@ -15,9 +15,4 @@ export const arithmetic: Example = {
   value :difference, input.x - input.y
 end`,
   base_input: { x: 10, y: 5 },
-  visualizations: {
-    sum: 'inline',
-    product: 'inline',
-    difference: 'inline',
-  },
 };

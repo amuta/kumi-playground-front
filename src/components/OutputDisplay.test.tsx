@@ -25,8 +25,8 @@ describe('OutputDisplay with visualization registry', () => {
     expect(json).toContain('product');
   });
 
-  it('uses visualization config from example', () => {
-    const results = { sum: 42, product: 100 };
+  it('uses table visualization config from example', () => {
+    const results = { history: [1, 2, 3] };
     const example: Example = {
       id: 'test',
       title: 'Test',
@@ -34,17 +34,14 @@ describe('OutputDisplay with visualization registry', () => {
       schema_src: '',
       base_input: {},
       visualizations: {
-        sum: 'inline',
-        product: 'inline',
+        history: 'table',
       },
     };
 
     render(<OutputDisplay results={results} outputSchema={mockOutputSchema} example={example} />);
 
-    expect(screen.getByText('sum:')).toBeInTheDocument();
-    expect(screen.getByText('42')).toBeInTheDocument();
-    expect(screen.getByText('product:')).toBeInTheDocument();
-    expect(screen.getByText('100')).toBeInTheDocument();
+    expect(screen.getByText('history:')).toBeInTheDocument();
+    expect(screen.getByRole('group')).toBeInTheDocument();
   });
 
   it('falls back to JSON for invalid visualization type', () => {
