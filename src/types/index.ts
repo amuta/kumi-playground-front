@@ -20,6 +20,8 @@ export type CompileResult = {
 
 export type ExampleMode = 'notebook' | 'canvas' | 'simulation';
 
+export type VisualizationType = 'json' | 'inline' | 'table' | 'grid';
+
 export type CanvasConfig = {
   render: 'grid2d';
   controls?: {
@@ -46,6 +48,7 @@ export type Example = {
   base_input?: Record<string, any>;
   canvas_config?: CanvasConfig;
   simulation_config?: SimulationConfig;
+  visualizations?: Record<string, VisualizationType>;
 };
 
 export type Statistics = {
