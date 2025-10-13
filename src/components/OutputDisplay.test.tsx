@@ -19,7 +19,10 @@ describe('OutputDisplay with visualization registry', () => {
 
     render(<OutputDisplay results={results} outputSchema={mockOutputSchema} />);
 
-    expect(screen.getAllByTestId('monaco')).toHaveLength(2);
+    expect(screen.getByTestId('monaco')).toBeInTheDocument();
+    const json = screen.getByTestId('monaco').textContent;
+    expect(json).toContain('sum');
+    expect(json).toContain('product');
   });
 
   it('uses visualization config from example', () => {
