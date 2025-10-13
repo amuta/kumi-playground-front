@@ -5,8 +5,37 @@ interface JsonOutputViewerProps {
   height?: string;
 }
 
+function safeJsonStringify(value: any): string {
+  if (value === undefined) {
+    return 'undefined';
+  }
+
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('circular')) {
+      return JSON.stringify(
+        {
+          error: 'Circular reference detected',
+          message: 'Cannot stringify object with circular references',
+        },
+        null,
+        2
+      );
+    }
+    return JSON.stringify(
+      {
+        error: 'Serialization error',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      },
+      null,
+      2
+    );
+  }
+}
+
 export function JsonOutputViewer({ value, height = '300px' }: JsonOutputViewerProps) {
-  const jsonString = JSON.stringify(value, null, 2);
+  const jsonString = safeJsonStringify(value);
 
   return (
     <Editor

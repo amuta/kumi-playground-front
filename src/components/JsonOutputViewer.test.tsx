@@ -38,4 +38,85 @@ describe('JsonOutputViewer', () => {
     const editor = screen.getByTestId('monaco-json');
     expect(editor).toBeInTheDocument();
   });
+
+  describe('edge cases', () => {
+    it('handles null value', () => {
+      render(<JsonOutputViewer value={null} />);
+
+      const editor = screen.getByTestId('monaco-json');
+      const displayedValue = editor.getAttribute('data-value');
+
+      expect(displayedValue).toBe('null');
+    });
+
+    it('handles undefined value', () => {
+      render(<JsonOutputViewer value={undefined} />);
+
+      const editor = screen.getByTestId('monaco-json');
+      const displayedValue = editor.getAttribute('data-value');
+
+      expect(displayedValue).toBe('undefined');
+    });
+
+    it('handles empty object', () => {
+      render(<JsonOutputViewer value={{}} />);
+
+      const editor = screen.getByTestId('monaco-json');
+      const displayedValue = editor.getAttribute('data-value');
+
+      expect(displayedValue).toBe('{}');
+    });
+
+    it('handles empty array', () => {
+      render(<JsonOutputViewer value={[]} />);
+
+      const editor = screen.getByTestId('monaco-json');
+      const displayedValue = editor.getAttribute('data-value');
+
+      expect(displayedValue).toBe('[]');
+    });
+
+    it('handles object with undefined values', () => {
+      const value = { a: 1, b: undefined, c: 'test' };
+
+      render(<JsonOutputViewer value={value} />);
+
+      const editor = screen.getByTestId('monaco-json');
+      const displayedValue = editor.getAttribute('data-value');
+      const parsed = JSON.parse(displayedValue!);
+
+      expect(parsed).toEqual({ a: 1, c: 'test' });
+    });
+
+    it('handles circular reference', () => {
+      const obj: any = { name: 'test' };
+      obj.self = obj;
+
+      render(<JsonOutputViewer value={obj} />);
+
+      const editor = screen.getByTestId('monaco-json');
+      const displayedValue = editor.getAttribute('data-value');
+
+      expect(displayedValue).toContain('Circular reference detected');
+    });
+
+    it('handles function values gracefully', () => {
+      const value = { fn: () => {}, data: 'test' };
+
+      render(<JsonOutputViewer value={value} />);
+
+      const editor = screen.getByTestId('monaco-json');
+      expect(editor).toBeInTheDocument();
+    });
+
+    it('handles symbols gracefully', () => {
+      const sym = Symbol('test');
+      const value = { [sym]: 'value', normal: 'data' };
+
+      render(<JsonOutputViewer value={value} />);
+
+      const editor = screen.getByTestId('monaco-json');
+      expect(editor).toBeInTheDocument();
+    });
+  });
 });
