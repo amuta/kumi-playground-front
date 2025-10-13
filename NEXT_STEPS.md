@@ -1,133 +1,93 @@
-# Next Steps for Kumi Play v2
+# Kumi Play v2 - Status & Next Steps
 
-## ✅ Completed
+## ✅ Complete
 
-### Backend Updates
-- [x] Updated `KumiCompile` service to extract `input_form_schema`, `output_schema`, and `lir`
-- [x] Updated API controller to return new fields
-- [x] Created test script (`web/test-compile-api.sh`)
-- [x] Fully backwards compatible
+### Frontend (55/55 tests passing)
+- Tab-based UI with Monaco editor
+- Schema compilation with error handling
+- Code viewer (JS/Ruby/LIR tabs)
+- Auto-generated input forms
+- ASCII output rendering
+- Full test coverage
 
-### Frontend Foundation
-- [x] Project structure set up (`web-v2/`)
-- [x] Core utilities: ASCII renderers, statistics, RNG
-- [x] Execution module with dynamic import-based eval
-- [x] API client with comprehensive error handling
-- [x] Integration tests for full compile → eval → execute flow
-- [x] **52/52 tests passing (9 test files)**
-
-## 🚧 Current Priority: React UI
-
-Build the user interface to connect everything together.
-
-### 1. Install Tailwind CSS
-
+### Running
 ```bash
-npm install -D tailwindcss postcss autoprefixer
-npx tailwindcss init -p
-```
-
-Configure `tailwind.config.js`:
-```js
-export default {
-  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
-  theme: { extend: {} },
-  plugins: [],
-}
-```
-
-### 2. Create Basic App Shell
-
-Files to create:
-- `src/main.tsx` - React entry point
-- `src/App.tsx` - Main application component
-- `src/index.css` - Tailwind imports and base styles
-
-The App should:
-- Show schema editor (textarea for now, Monaco later)
-- Have "Compile & Run" button
-- Display compilation errors
-- Show output results
-
-### 3. Test End-to-End
-
-Start both servers:
-```bash
-# Terminal 1: Rails backend
-cd ../web && rails s
-
-# Terminal 2: Vite frontend
+# Frontend dev server
 npm run dev
+# → http://localhost:5173
+
+# Backend (Rails)
+cd ../web && rails s
+# → http://localhost:3000
 ```
 
-Test flow:
-1. Type schema in editor
-2. Click "Compile & Run"
-3. See compiled output or errors
+## 🧪 Test It
 
-## 📋 Next Phase: Enhanced UI
+1. Open http://localhost:5173
+2. Edit schema in Schema tab
+3. Click "Compile"
+4. View compiled code in Compiled Code tab
+5. Switch to Execute tab
+6. Fill form and click "Execute"
+7. See ASCII-rendered output
 
-Once basic app works:
+## 📋 Next Enhancements
 
-### Notebook Mode
-- [ ] Form generator from `input_form_schema`
-- [ ] Output renderer (JSON → formatted display)
-- [ ] Multiple examples with selector
+### Example Schemas
+Add dropdown with pre-built examples:
+- Basic arithmetic (x + y)
+- Shopping cart with totals
+- Game of Life grid
 
-### Canvas Mode
-- [ ] ASCII grid display with `renderAsciiGrid()`
-- [ ] Play/pause controls
-- [ ] Speed slider
-- [ ] Canvas worker for animation loop
-
-### Simulation Mode
-- [ ] Progress bar
-- [ ] Histogram visualization
-- [ ] Statistics display (mean, p95, etc)
-- [ ] Simulation worker for batch execution
-
-## 🎯 Immediate Action Plan
-
-### Today (2-3 hours):
-1. [ ] Install Tailwind CSS
-2. [ ] Create `src/main.tsx`, `src/App.tsx`, `src/index.css`
-3. [ ] Start both servers and test compile → execute flow
-4. [ ] Fix any issues with the integration
-
-### This Week:
-5. [ ] Implement input form generation from schema
-6. [ ] Add Monaco editor for better schema editing
-7. [ ] Create 3 example schemas (arithmetic, shopping cart, Game of Life)
-8. [ ] Add example selector dropdown
-
-## 🧪 Testing Backend
-
-Backend is already running. To test API directly:
-```bash
-cd /home/muta/repos/kumi-play/web
-./test-compile-api.sh
+Implementation:
+```typescript
+// src/examples/index.ts
+export const examples = [
+  {
+    id: 'arithmetic',
+    title: 'Basic Arithmetic',
+    schema_src: `schema do ... end`,
+  },
+  // ...
+]
 ```
 
-Expected response includes `input_form_schema`, `output_schema`, `js_src`, etc.
+### Future Modes
 
-## 📁 Files to Create Next
+**Canvas Mode** - For animations (Game of Life)
+- Play/pause/step controls
+- Speed slider
+- Web worker for animation loop
 
-- [ ] `src/App.tsx`
-- [ ] `src/main.tsx`
-- [ ] `src/index.css`
-- [ ] `tailwind.config.js`
-- [ ] `postcss.config.js`
+**Simulation Mode** - For Monte Carlo
+- Progress bar
+- Histogram visualization
+- Statistics display (mean, std, p95)
+- Web worker for batch execution
 
-## 🎨 Design Principles
+## 📁 Project Structure
 
-- **Start simple**: Textarea + JSON output first
-- **ASCII rendering**: Use existing utilities, upgrade visuals later
-- **Notebook mode first**: Simplest mode, no workers needed
-- **Progressive enhancement**: Add Monaco/Canvas/Simulation incrementally
+```
+web-v2/
+├── src/
+│   ├── api/compile.ts           API client
+│   ├── execution/eval-module.ts JS execution
+│   ├── rendering/               ASCII renderers
+│   ├── components/
+│   │   ├── SchemaEditor.tsx     Monaco editor
+│   │   ├── CompiledCodeView.tsx Code tabs
+│   │   ├── ExecuteTab.tsx       Execution UI
+│   │   ├── InputForm.tsx        Form generator
+│   │   └── OutputDisplay.tsx    Output renderer
+│   └── App.tsx                  Main app
+├── tests                        55 tests
+└── docs/
+    ├── DESIGN.md                Architecture
+    └── NEXT_STEPS.md            This file
+```
 
-## 📚 Reference Docs
+## 🎯 Current Status
 
-- `DESIGN.md` - Full architecture and design decisions
-- `STATUS.md` - Current state and what's implemented
-- `BACKEND_CHANGES.md` - API changes and schema
-- `IMPLEMENTATION_GUIDE.md` - Detailed implementation notes
+**Ready for use!** Start the backend and test the full flow.
+
+All core features implemented. Future work is enhancements only.
