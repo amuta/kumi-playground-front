@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { Example, VisualizationType } from './index';
+import type { Example } from './index';
 
 describe('Types', () => {
   it('Example accepts visualizations config', () => {

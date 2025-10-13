@@ -17,7 +17,7 @@ const visualizers = {
   grid: GridVisualizer,
 } as const;
 
-export function OutputDisplay({ results, outputSchema, example }: OutputDisplayProps) {
+export function OutputDisplay({ results, example }: OutputDisplayProps) {
   const getVisualizationType = (outputName: string): VisualizationType => {
     const configuredType = example?.visualizations?.[outputName];
 
