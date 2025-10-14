@@ -1,9 +1,8 @@
-// components/tabs/ExecuteTab.tsx
 import { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { JsonInputEditor } from '@/components/JsonInputEditor';
 import { OutputDisplay } from '@/components/OutputDisplay';
-import { evalCompiledModule, executeAllOutputs } from '@/execution/eval-module';
+import { executeAllOutputsFromUrl } from '@/execution/eval-module-url';
 import type { CompileResponse } from '@/api/compile';
 import type { Example } from '@/types';
 
@@ -38,8 +37,11 @@ export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function Ex
     setExecutionError(null);
     onExecuteStart?.();
     try {
-      const module = await evalCompiledModule(compiledResult.js_src);
-      const results = executeAllOutputs(module, inputValues, compiledResult.output_schema);
+      const results = await executeAllOutputsFromUrl(
+        compiledResult.artifact_url,
+        inputValues,
+        compiledResult.output_schema
+      );
       setExecutionResult(results);
     } catch (error) {
       setExecutionError(error instanceof Error ? error.message : 'Execution failed');
@@ -85,7 +87,7 @@ export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function Ex
               </CardContent>
             </Card>
           ) : executionResult ? (
-                        <Card className="shadow-lg border-2 flex-1 flex flex-col overflow-hidden min-h-0">
+            <Card className="shadow-lg border-2 flex-1 flex flex-col overflow-hidden min-h-0">
               <CardContent className="pt-6 flex-1 min-h-0 flex flex-col">
                 <div className="flex-1 min-h-0">
                   <OutputDisplay
@@ -95,7 +97,7 @@ export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function Ex
                   />
                 </div>
               </CardContent>
-             </Card>
+            </Card>
           ) : (
             <Card className="shadow-lg border-2 border-dashed bg-muted/20 flex-1 flex flex-col min-h-0">
               <CardContent className="pt-6 flex-1 min-h-0 flex items-center justify-center">

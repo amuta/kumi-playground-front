@@ -10,16 +10,21 @@ export type OutputField = {
 };
 
 export type CompileResult = {
+  // URL for executable JS artifact produced by the compiler.
+  // Optional to remain compatible with older mocks; recommended in new flow.
+  artifact_url?: string;
+
+  // Optional display artifacts for UI.
   js_src: string;
   ruby_src: string;
   lir: string;
+
   schema_hash: string;
   input_form_schema: Record<string, InputField>;
   output_schema: Record<string, OutputField>;
 };
 
 export type ExampleMode = 'notebook' | 'canvas' | 'simulation';
-
 export type VisualizationType = 'json' | 'table' | 'grid';
 
 export type ExecutionConfig = {

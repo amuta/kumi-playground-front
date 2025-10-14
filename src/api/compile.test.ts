@@ -15,7 +15,8 @@ describe('compileKumiSchema', () => {
 
   it('successfully compiles valid schema', async () => {
     const mockResult: CompileResult = {
-      js_src: 'class KumiCompiledModule {}',
+      artifact_url: 'http://localhost:3000/artifacts/abc123.js',
+  js_src: 'class KumiCompiledModule {}',
       ruby_src: 'class CompiledModule; end',
       lir: 'module { }',
       schema_hash: 'abc123',
@@ -84,7 +85,8 @@ describe('compileKumiSchema', () => {
 
   it('handles empty schema', async () => {
     const mockResult: CompileResult = {
-      js_src: 'class KumiCompiledModule {}',
+      artifact_url: 'http://localhost:3000/artifacts/abc123.js',
+  js_src: 'class KumiCompiledModule {}',
       ruby_src: 'class CompiledModule; end',
       lir: 'module { }',
       schema_hash: 'def456',

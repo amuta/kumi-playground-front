@@ -1,48 +1,71 @@
-import { describe, it, expect } from 'vitest';
-import { evalCompiledModuleFromUrl, executeAllOutputsFromUrl } from './eval-module-url';
-import { compileSchema } from '@/api/compile';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import {
+  evalCompiledModuleFromUrl,
+  executeOutput,
+  executeAllOutputs,
+  executeAllOutputsFromUrl,
+} from './eval-module-url';
 
-describe('evalCompiledModuleFromUrl', () => {
-  it('loads and executes module from artifact URL', async () => {
-    const schema = `schema do
-      input do
-        integer :x
-      end
-      value :result, input.x * 3
-    end`;
+describe('executeOutput / executeAllOutputs (pure helpers)', () => {
+  const mockModule = {
+    _total: (input: any) => input.price * input.qty,
+    _doubled: (input: any) => input.x * 2,
+  };
 
-    const compiled = await compileSchema(schema);
-    const input = { x: 7 };
-
-    const outputs = await executeAllOutputsFromUrl(
-      compiled.artifact_url,
-      input,
-      compiled.output_schema
-    );
-
-    expect(outputs.result).toBe(21);
+  it('executes a single output', () => {
+    const result = executeOutput(mockModule, 'total', { price: 10, qty: 3 });
+    expect(result).toBe(30);
   });
 
-  it('handles multiple outputs from URL', async () => {
-    const schema = `schema do
-      input do
-        integer :a
-        integer :b
-      end
-      value :sum, input.a + input.b
-      value :diff, input.a - input.b
-    end`;
+  it('errors on missing output', () => {
+    expect(() => executeOutput(mockModule, 'missing', {})).toThrow(/not found/);
+  });
 
-    const compiled = await compileSchema(schema);
-    const input = { a: 10, b: 3 };
+  it('executes all "value" outputs and ignores traits', () => {
+    const outputSchema = {
+      total: { kind: 'value' as const, type: 'float' as const, axes: [] },
+      doubled: { kind: 'value' as const, type: 'integer' as const, axes: [] },
+      flag: { kind: 'trait' as const, type: 'boolean' as const, axes: [] },
+    };
+    const results = executeAllOutputs(mockModule, { price: 2, qty: 5, x: 7 }, outputSchema);
+    expect(results).toEqual({ total: 10, doubled: 14 });
+    // @ts-expect-error trait should not exist
+    expect(results.flag).toBeUndefined();
+  });
+});
 
-    const outputs = await executeAllOutputsFromUrl(
-      compiled.artifact_url,
-      input,
-      compiled.output_schema
-    );
+describe('URL-based evaluation', () => {
+  const originalFetch = global.fetch as any;
 
-    expect(outputs.sum).toBe(13);
-    expect(outputs.diff).toBe(7);
+  beforeEach(() => {
+    (global.fetch as any) = vi.fn();
+  });
+
+  afterEach(() => {
+    (global.fetch as any) = originalFetch;
+  });
+
+  it('loads module from artifact URL and executes outputs', async () => {
+    const js = `
+      export function _sum(i){ return i.a + i.b; }
+      export function _trait_example(){ return true; }
+    `;
+
+    (global.fetch as any)
+      .mockResolvedValueOnce({ ok: true, text: async () => js });
+
+    const schema = {
+      sum: { kind: 'value' as const, type: 'integer' as const, axes: [] },
+      trait_example: { kind: 'trait' as const, type: 'boolean' as const, axes: [] },
+    };
+
+    const outputs = await executeAllOutputsFromUrl('http://x/artifacts/abc.js', { a: 3, b: 4 }, schema);
+    expect(outputs).toEqual({ sum: 7 });
+  });
+
+  it('propagates HTTP errors', async () => {
+    (global.fetch as any).mockResolvedValueOnce({ ok: false, status: 404, statusText: 'Not Found' });
+    await expect(evalCompiledModuleFromUrl('http://x/missing.js'))
+      .rejects.toThrow(/HTTP 404: Not Found/);
   });
 });
