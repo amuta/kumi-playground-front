@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { compileKumiSchema } from './api/compile';
-import { executeAllOutputsFromUrl } from './execution/eval-module-url';
+import { runAllOutputsFromUrl } from './execution/artifact-runner';
 import type { CompileResult } from './types';
 
 describe('Integration: compile → artifact → execute (URL-only)', () => {
@@ -46,7 +46,7 @@ describe('Integration: compile → artifact → execute (URL-only)', () => {
     });
 
     const compiled = await compileKumiSchema('schema do end');
-    const results = await executeAllOutputsFromUrl(
+    const results = await runAllOutputsFromUrl(
       compiled.artifact_url,
       { x: 3, y: 4 },
       compiled.output_schema
@@ -89,7 +89,7 @@ describe('Integration: compile → artifact → execute (URL-only)', () => {
 
     const compiled = await compileKumiSchema('schema do end');
 
-    await expect(executeAllOutputsFromUrl(
+    await expect(runAllOutputsFromUrl(
       compiled.artifact_url,
       { a: 10, b: 0 },
       compiled.output_schema
@@ -120,7 +120,7 @@ describe('Integration: compile → artifact → execute (URL-only)', () => {
       .mockResolvedValueOnce({ ok: true, text: async () => artifactJs }); // artifact
 
     const compiled = await compileKumiSchema('schema do end');
-    const results = await executeAllOutputsFromUrl(
+    const results = await runAllOutputsFromUrl(
       compiled.artifact_url,
       { points: 100 },
       compiled.output_schema

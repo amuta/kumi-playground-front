@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
-  evalCompiledModuleFromUrl,
+  loadArtifactModule,
   executeOutput,
-  executeAllOutputs,
-  executeAllOutputsFromUrl,
-} from './eval-module-url';
+  runAllOutputs,
+  runAllOutputsFromUrl,
+} from './artifact-runner';
 
-describe('executeOutput / executeAllOutputs (pure helpers)', () => {
+describe('executeOutput / runAllOutputs (pure helpers)', () => {
   const mockModule = {
     _total: (input: any) => input.price * input.qty,
     _doubled: (input: any) => input.x * 2,
@@ -27,7 +27,7 @@ describe('executeOutput / executeAllOutputs (pure helpers)', () => {
       doubled: { kind: 'value' as const, type: 'integer' as const, axes: [] },
       flag: { kind: 'trait' as const, type: 'boolean' as const, axes: [] },
     };
-    const results = executeAllOutputs(mockModule, { price: 2, qty: 5, x: 7 }, outputSchema);
+    const results = runAllOutputs(mockModule, { price: 2, qty: 5, x: 7 }, outputSchema);
     expect(results).toEqual({ total: 10, doubled: 14 });
     // @ts-expect-error trait should not exist
     expect(results.flag).toBeUndefined();
@@ -59,13 +59,13 @@ describe('URL-based evaluation', () => {
       trait_example: { kind: 'trait' as const, type: 'boolean' as const, axes: [] },
     };
 
-    const outputs = await executeAllOutputsFromUrl('http://x/artifacts/abc.js', { a: 3, b: 4 }, schema);
+    const outputs = await runAllOutputsFromUrl('http://x/artifacts/abc.js', { a: 3, b: 4 }, schema);
     expect(outputs).toEqual({ sum: 7 });
   });
 
   it('propagates HTTP errors', async () => {
     (global.fetch as any).mockResolvedValueOnce({ ok: false, status: 404, statusText: 'Not Found' });
-    await expect(evalCompiledModuleFromUrl('http://x/missing.js'))
+    await expect(loadArtifactModule('http://x/missing.js'))
       .rejects.toThrow(/HTTP 404: Not Found/);
   });
 });

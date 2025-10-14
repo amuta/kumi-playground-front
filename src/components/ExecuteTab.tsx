@@ -2,7 +2,7 @@ import { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { JsonInputEditor } from '@/components/JsonInputEditor';
 import { OutputDisplay } from '@/components/OutputDisplay';
-import { executeAllOutputsFromUrl } from '@/execution/eval-module-url';
+import { runAllOutputsFromUrl } from '@/execution/artifact-runner';
 import type { CompileResponse } from '@/api/compile';
 import type { Example } from '@/types';
 
@@ -37,7 +37,7 @@ export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function Ex
     setExecutionError(null);
     onExecuteStart?.();
     try {
-      const results = await executeAllOutputsFromUrl(
+      const results = await runAllOutputsFromUrl(
         compiledResult.artifact_url,
         inputValues,
         compiledResult.output_schema

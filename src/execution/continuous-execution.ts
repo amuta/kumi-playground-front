@@ -1,5 +1,5 @@
 import type { OutputField, ExecutionConfig } from '@/types';
-import { executeAllOutputsFromUrl } from './eval-module-url';
+import { runAllOutputsFromUrl } from './artifact-runner';
 import { applyFeedbackMappings } from './feedback-loop';
 
 export async function executeSingleIteration(
@@ -7,7 +7,7 @@ export async function executeSingleIteration(
   input: Record<string, any>,
   outputSchema: Record<string, OutputField>
 ): Promise<Record<string, any>> {
-  return executeAllOutputsFromUrl(artifactUrl, input, outputSchema);
+  return runAllOutputsFromUrl(artifactUrl, input, outputSchema);
 }
 
 export type IterationStep = {
