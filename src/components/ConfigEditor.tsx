@@ -6,37 +6,55 @@ import type { ExecutionConfig, VisualizationConfig } from '@/types';
 interface ConfigEditorProps {
   executionConfig: ExecutionConfig;
   visualizationConfig: VisualizationConfig;
-  onChange: (execution: ExecutionConfig, visualization: VisualizationConfig) => void;
+  onExecutionConfigChange: (config: ExecutionConfig) => void;
+  onVisualizationConfigChange: (config: VisualizationConfig) => void;
 }
 
-type CombinedConfig = {
-  execution: ExecutionConfig;
-  visualization: VisualizationConfig;
-};
+interface CombinedConfig {
+  execution_config: ExecutionConfig;
+  visualization_config: VisualizationConfig;
+}
 
-export function ConfigEditor({ executionConfig, visualizationConfig, onChange }: ConfigEditorProps) {
-  const [configJson, setConfigJson] = useState('');
-  const [parseError, setParseError] = useState<string | null>(null);
+export function ConfigEditor({
+  executionConfig,
+  visualizationConfig,
+  onExecutionConfigChange,
+  onVisualizationConfigChange,
+}: ConfigEditorProps) {
+  const [jsonValue, setJsonValue] = useState(() =>
+    JSON.stringify(
+      { execution_config: executionConfig, visualization_config: visualizationConfig },
+      null,
+      2
+    )
+  );
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const combined: CombinedConfig = {
-      execution: executionConfig,
-      visualization: visualizationConfig,
-    };
-    setConfigJson(JSON.stringify(combined, null, 2));
+    setJsonValue(
+      JSON.stringify(
+        { execution_config: executionConfig, visualization_config: visualizationConfig },
+        null,
+        2
+      )
+    );
   }, [executionConfig, visualizationConfig]);
 
-  const handleEditorChange = (newValue: string | undefined) => {
-    if (newValue === undefined) return;
+  const handleChange = (value: string | undefined) => {
+    if (value === undefined) return;
 
-    setConfigJson(newValue);
+    setJsonValue(value);
 
     try {
-      const parsed = JSON.parse(newValue) as CombinedConfig;
-      setParseError(null);
-      onChange(parsed.execution, parsed.visualization);
-    } catch (error) {
-      setParseError(error instanceof Error ? error.message : 'Invalid JSON');
+      const parsed: CombinedConfig = JSON.parse(value);
+
+      if (parsed.execution_config && parsed.visualization_config) {
+        setError(null);
+        onExecutionConfigChange(parsed.execution_config);
+        onVisualizationConfigChange(parsed.visualization_config);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Invalid JSON');
     }
   };
 
@@ -47,8 +65,8 @@ export function ConfigEditor({ executionConfig, visualizationConfig, onChange }:
           <Editor
             height="100%"
             defaultLanguage="json"
-            value={configJson}
-            onChange={handleEditorChange}
+            value={jsonValue}
+            onChange={handleChange}
             theme="vs-dark"
             options={{
               minimap: { enabled: false },
@@ -62,9 +80,9 @@ export function ConfigEditor({ executionConfig, visualizationConfig, onChange }:
         </div>
       </Card>
 
-      {parseError && (
+      {error && (
         <Card className="mt-6 p-4 bg-destructive/10 border-destructive shadow-sm">
-          <p className="text-sm text-destructive font-mono leading-relaxed">{parseError}</p>
+          <p className="text-sm text-destructive font-mono leading-relaxed">Invalid JSON: {error}</p>
         </Card>
       )}
     </div>

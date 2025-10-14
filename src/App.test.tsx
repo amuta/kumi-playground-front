@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { describe, test, vi } from 'vitest';
+import { describe, test, vi, expect } from 'vitest';
 
 vi.mock('@monaco-editor/react', () => ({
   default: () => <div>Monaco Editor</div>,
@@ -12,7 +12,7 @@ describe('App', () => {
     render(<App />);
 
     expect(screen.getByText('Kumi Play')).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /Schema/i })).toBeInTheDocument();
+    expect(screen.getAllByRole('tab', { name: /Schema/i }).length).toBeGreaterThan(0);
     expect(screen.getByRole('tab', { name: /Compiled Code/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Execute/i })).toBeInTheDocument();
   });
@@ -20,8 +20,11 @@ describe('App', () => {
   test('Schema tab is active by default', () => {
     render(<App />);
 
-    const schemaTab = screen.getByRole('tab', { name: /Schema/i });
-    expect(schemaTab).toHaveAttribute('data-state', 'active');
+    const schemaTabs = screen.getAllByRole('tab', { name: /Schema/i });
+    const mainSchemaTab = schemaTabs.find(tab =>
+      tab.textContent?.includes('⌘1')
+    );
+    expect(mainSchemaTab).toHaveAttribute('data-state', 'active');
   });
 
   test('Compile button is present in Schema tab', () => {
@@ -29,4 +32,5 @@ describe('App', () => {
 
     expect(screen.getByRole('button', { name: /Compile/i })).toBeInTheDocument();
   });
+
 });

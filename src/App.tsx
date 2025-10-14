@@ -1,7 +1,6 @@
-// src/App.tsx — copy & replace
 import { useState, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { SchemaEditor, type SchemaEditorRef } from '@/components/SchemaEditor';
+import { SchemaTabContainer, type SchemaTabContainerRef } from '@/components/SchemaTabContainer';
 import { CompiledCodeView } from '@/components/CompiledCodeView';
 import { ExecuteTab, type ExecuteTabRef } from '@/components/ExecuteTab';
 import { ExampleSelector } from '@/components/ExampleSelector';
@@ -10,16 +9,27 @@ import { StickyActionBar } from '@/components/StickyActionBar';
 import { Button } from '@/components/ui/button';
 import { Keyboard } from 'lucide-react';
 import { useKeyboard } from '@/hooks/useKeyboard';
+import { useExampleState } from '@/hooks/useExampleState';
 import type { CompileResponse } from '@/api/compile';
 import { examples, getDefaultExample } from '@/examples';
 import type { Example } from '@/types';
 
 export function App() {
-  const schemaEditorRef = useRef<SchemaEditorRef>(null);
+  const schemaTabContainerRef = useRef<SchemaTabContainerRef>(null);
   const executeTabRef = useRef<ExecuteTabRef>(null);
   const [currentExample, setCurrentExample] = useState<Example>(getDefaultExample());
-  const [schemaSource, setSchemaSource] = useState(currentExample.schema_src);
-  const [compiledResult, setCompiledResult] = useState<CompileResponse | null>(null);
+
+  const {
+    schemaSource,
+    setSchemaSource,
+    compiledResult,
+    setCompiledResult,
+    executionConfig,
+    setExecutionConfig,
+    visualizationConfig,
+    setVisualizationConfig,
+  } = useExampleState(currentExample);
+
   const [compileError, setCompileError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('schema');
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -33,8 +43,10 @@ export function App() {
   };
   const handleCompileError = (error: string) => { setCompileError(error); setCompiledResult(null); };
   const handleExampleChange = (example: Example) => {
-    setCurrentExample(example); setSchemaSource(example.schema_src);
-    setCompiledResult(null); setCompileError(null); setActiveTab('schema');
+    setCurrentExample(example);
+    setCompiledResult(null);
+    setCompileError(null);
+    setActiveTab('schema');
   };
 
   useKeyboard({
@@ -44,10 +56,10 @@ export function App() {
     'ctrl+1': () => setActiveTab('schema'),
     'ctrl+2': () => compiledResult && setActiveTab('compiled'),
     'ctrl+3': () => compiledResult && setActiveTab('execute'),
-    'meta+s': () => schemaEditorRef.current?.compile(),
-    'ctrl+s': () => schemaEditorRef.current?.compile(),
-    'meta+enter': () => (activeTab === 'schema' ? schemaEditorRef.current?.compile() : executeTabRef.current?.execute()),
-    'ctrl+enter': () => (activeTab === 'schema' ? schemaEditorRef.current?.compile() : executeTabRef.current?.execute()),
+    'meta+s': () => schemaTabContainerRef.current?.compile(),
+    'ctrl+s': () => schemaTabContainerRef.current?.compile(),
+    'meta+enter': () => (activeTab === 'schema' ? schemaTabContainerRef.current?.compile() : executeTabRef.current?.execute()),
+    'ctrl+enter': () => (activeTab === 'schema' ? schemaTabContainerRef.current?.compile() : executeTabRef.current?.execute()),
     'meta+k': () => setShowShortcuts(p=>!p),
     'ctrl+k': () => setShowShortcuts(p=>!p),
     '?': () => setShowShortcuts(p=>!p),
@@ -82,10 +94,14 @@ export function App() {
 
             <div className="flex-1 min-h-0 overflow-hidden">
               <TabsContent value="schema" className="m-0 h-full">
-                <SchemaEditor
-                  ref={schemaEditorRef}
-                  value={schemaSource}
-                  onChange={setSchemaSource}
+                <SchemaTabContainer
+                  ref={schemaTabContainerRef}
+                  schemaSource={schemaSource}
+                  onSchemaSourceChange={setSchemaSource}
+                  executionConfig={executionConfig}
+                  visualizationConfig={visualizationConfig}
+                  onExecutionConfigChange={setExecutionConfig}
+                  onVisualizationConfigChange={setVisualizationConfig}
                   onCompileSuccess={handleCompileSuccess}
                   onCompileError={handleCompileError}
                   compileError={compileError}
@@ -115,7 +131,7 @@ export function App() {
       </main>
 
       <KeyboardShortcutsHelp isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
-      {activeTab === 'schema' && (<StickyActionBar action="compile" onAction={() => schemaEditorRef.current?.compile()} disabled={isCompiling} isLoading={isCompiling}/>)}
+      {activeTab === 'schema' && (<StickyActionBar action="compile" onAction={() => schemaTabContainerRef.current?.compile()} disabled={isCompiling} isLoading={isCompiling}/>)}
       {activeTab === 'execute' && compiledResult && (<StickyActionBar action="execute" onAction={() => executeTabRef.current?.execute()} disabled={isExecuting} isLoading={isExecuting}/>)}
       {!(activeTab === 'schema' || (activeTab === 'execute' && compiledResult)) && (
         <div className="fixed inset-x-0 bottom-0 h-[var(--bottom-bar-h)] border-t bg-background/80 backdrop-blur z-40" />

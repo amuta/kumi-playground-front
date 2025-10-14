@@ -1,8 +1,9 @@
 
-import { useImperativeHandle, forwardRef } from 'react';
-import Editor from '@monaco-editor/react';
+import { useImperativeHandle, forwardRef, useRef } from 'react';
+import Editor, { type Monaco } from '@monaco-editor/react';
 import { Card } from '@/components/ui/card';
 import { compileSchema, type CompileResponse } from '@/api/compile';
+import type { editor as MonacoEditor } from 'monaco-editor';
 
 
 interface SchemaEditorProps {
@@ -28,7 +29,8 @@ export const SchemaEditor = forwardRef<SchemaEditorRef, SchemaEditorProps>(({
   onCompileStart,
   onCompileEnd,
 }, ref) => {
-  
+  const editorRef = useRef<MonacoEditor.IStandaloneCodeEditor | null>(null);
+  const monacoRef = useRef<Monaco | null>(null);
 
   const handleEditorChange = (newValue: string | undefined) => {
     if (newValue !== undefined) {
@@ -37,7 +39,6 @@ export const SchemaEditor = forwardRef<SchemaEditorRef, SchemaEditorProps>(({
   };
 
   const handleCompile = async () => {
-    
     onCompileStart?.();
     try {
       const result = await compileSchema(value);
@@ -45,9 +46,27 @@ export const SchemaEditor = forwardRef<SchemaEditorRef, SchemaEditorProps>(({
     } catch (error) {
       onCompileError(error instanceof Error ? error.message : 'Compilation failed');
     } finally {
-      
       onCompileEnd?.();
     }
+  };
+
+  const handleEditorDidMount = (editor: MonacoEditor.IStandaloneCodeEditor, monaco: Monaco) => {
+    editorRef.current = editor;
+    monacoRef.current = monaco;
+
+    editor.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
+      () => {
+        handleCompile();
+      }
+    );
+
+    editor.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
+      () => {
+        handleCompile();
+      }
+    );
   };
 
   useImperativeHandle(ref, () => ({
@@ -64,10 +83,7 @@ export const SchemaEditor = forwardRef<SchemaEditorRef, SchemaEditorProps>(({
             value={value}
             onChange={handleEditorChange}
             theme="vs-dark"
-            onMount={() => {
-              // Keyboard shortcuts handled globally by App.tsx useKeyboard hook
-              // to ensure they respect the active tab state
-            }}
+            onMount={handleEditorDidMount}
             options={{
               minimap: { enabled: false },
               fontSize: 14,
