@@ -1,83 +1,125 @@
-import { useState } from 'react';
+// src/App.tsx — copy & replace
+import { useState, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { SchemaEditor } from '@/components/SchemaEditor';
+import { SchemaEditor, type SchemaEditorRef } from '@/components/SchemaEditor';
 import { CompiledCodeView } from '@/components/CompiledCodeView';
-import { ExecuteTab } from '@/components/ExecuteTab';
+import { ExecuteTab, type ExecuteTabRef } from '@/components/ExecuteTab';
 import { ExampleSelector } from '@/components/ExampleSelector';
+import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp';
+import { StickyActionBar } from '@/components/StickyActionBar';
+import { Button } from '@/components/ui/button';
+import { Keyboard } from 'lucide-react';
+import { useKeyboard } from '@/hooks/useKeyboard';
 import type { CompileResponse } from '@/api/compile';
 import { examples, getDefaultExample } from '@/examples';
 import type { Example } from '@/types';
 
 export function App() {
+  const schemaEditorRef = useRef<SchemaEditorRef>(null);
+  const executeTabRef = useRef<ExecuteTabRef>(null);
   const [currentExample, setCurrentExample] = useState<Example>(getDefaultExample());
   const [schemaSource, setSchemaSource] = useState(currentExample.schema_src);
   const [compiledResult, setCompiledResult] = useState<CompileResponse | null>(null);
   const [compileError, setCompileError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('schema');
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [isCompiling, setIsCompiling] = useState(false);
+  const [isExecuting, setIsExecuting] = useState(false);
 
   const handleCompileSuccess = (result: CompileResponse) => {
     setCompiledResult(result);
     setCompileError(null);
     setActiveTab('execute');
   };
-
-  const handleCompileError = (error: string) => {
-    setCompileError(error);
-    setCompiledResult(null);
-  };
-
+  const handleCompileError = (error: string) => { setCompileError(error); setCompiledResult(null); };
   const handleExampleChange = (example: Example) => {
-    setCurrentExample(example);
-    setSchemaSource(example.schema_src);
-    setCompiledResult(null);
-    setCompileError(null);
-    setActiveTab('schema');
+    setCurrentExample(example); setSchemaSource(example.schema_src);
+    setCompiledResult(null); setCompileError(null); setActiveTab('schema');
   };
+
+  useKeyboard({
+    'meta+1': () => setActiveTab('schema'),
+    'meta+2': () => compiledResult && setActiveTab('compiled'),
+    'meta+3': () => compiledResult && setActiveTab('execute'),
+    'ctrl+1': () => setActiveTab('schema'),
+    'ctrl+2': () => compiledResult && setActiveTab('compiled'),
+    'ctrl+3': () => compiledResult && setActiveTab('execute'),
+    'meta+s': () => schemaEditorRef.current?.compile(),
+    'ctrl+s': () => schemaEditorRef.current?.compile(),
+    'meta+enter': () => (activeTab === 'schema' ? schemaEditorRef.current?.compile() : executeTabRef.current?.execute()),
+    'ctrl+enter': () => (activeTab === 'schema' ? schemaEditorRef.current?.compile() : executeTabRef.current?.execute()),
+    'meta+k': () => setShowShortcuts(p=>!p),
+    'ctrl+k': () => setShowShortcuts(p=>!p),
+    '?': () => setShowShortcuts(p=>!p),
+  }, [compiledResult, activeTab]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Kumi Play</h1>
-          <ExampleSelector
-            examples={examples}
-            currentExample={currentExample}
-            onExampleChange={handleExampleChange}
-          />
+    <div className="h-screen flex flex-col bg-background pb-bottom-bar overflow-hidden">
+      <header className="h-[var(--header-h)] border-b shadow-sm bg-card flex-shrink-0">
+        <div className="px-6 h-full flex items-center justify-between max-w-[1800px] mx-auto">
+          <h1 className="text-2xl font-bold tracking-tight text-primary">Kumi Play</h1>
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" onClick={() => setShowShortcuts(true)} className="gap-2 focus-ring text-muted-foreground hover:text-foreground">
+              <Keyboard className="h-4 w-4" />
+              <span className="hidden sm:inline">Shortcuts</span>
+              <kbd className="hidden md:inline-block px-1.5 py-0.5 text-xs font-mono bg-muted rounded">?</kbd>
+            </Button>
+            <ExampleSelector examples={examples} currentExample={currentExample} onExampleChange={handleExampleChange}/>
+          </div>
         </div>
       </header>
 
-      <main className="container mx-auto p-4">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="schema">Schema</TabsTrigger>
-            <TabsTrigger value="compiled" disabled={!compiledResult}>
-              Compiled Code
-            </TabsTrigger>
-            <TabsTrigger value="execute" disabled={!compiledResult}>
-              Execute
-            </TabsTrigger>
-          </TabsList>
+      <main className="h-under-chrome min-h-0 overflow-hidden">
+        <div className="h-full min-h-0 flex flex-col max-w-[1800px] mx-auto w-full p-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full min-h-0 flex flex-col">
+            <div className="sticky top-0 z-20 bg-background">
+              <TabsList className="grid w-full grid-cols-3 mb-6">
+                <TabsTrigger value="schema" className="gap-3">Schema<kbd className="hidden sm:inline-block ml-auto px-1.5 py-0.5 text-xs font-mono bg-muted rounded">⌘1</kbd></TabsTrigger>
+                <TabsTrigger value="compiled" disabled={!compiledResult} className="gap-3">Compiled Code<kbd className="hidden sm:inline-block ml-auto px-1.5 py-0.5 text-xs font-mono bg-muted rounded">⌘2</kbd></TabsTrigger>
+                <TabsTrigger value="execute" disabled={!compiledResult} className="gap-3">Execute<kbd className="hidden sm:inline-block ml-auto px-1.5 py-0.5 text-xs font-mono bg-muted rounded">⌘3</kbd></TabsTrigger>
+              </TabsList>
+            </div>
 
-          <TabsContent value="schema" className="mt-4">
-            <SchemaEditor
-              value={schemaSource}
-              onChange={setSchemaSource}
-              onCompileSuccess={handleCompileSuccess}
-              onCompileError={handleCompileError}
-              compileError={compileError}
-            />
-          </TabsContent>
+            <div className="flex-1 min-h-0 overflow-hidden">
+              <TabsContent value="schema" className="m-0 h-full">
+                <SchemaEditor
+                  ref={schemaEditorRef}
+                  value={schemaSource}
+                  onChange={setSchemaSource}
+                  onCompileSuccess={handleCompileSuccess}
+                  onCompileError={handleCompileError}
+                  compileError={compileError}
+                  onCompileStart={() => setIsCompiling(true)}
+                  onCompileEnd={() => setIsCompiling(false)}
+                />
+              </TabsContent>
 
-          <TabsContent value="compiled" className="mt-4">
-            {compiledResult && <CompiledCodeView result={compiledResult} />}
-          </TabsContent>
+              <TabsContent value="compiled" className="m-0 h-full">
+                {compiledResult && <CompiledCodeView result={compiledResult} />}
+              </TabsContent>
 
-          <TabsContent value="execute" className="mt-4">
-            {compiledResult && <ExecuteTab compiledResult={compiledResult} example={currentExample} />}
-          </TabsContent>
-        </Tabs>
+              <TabsContent value="execute" className="m-0 h-full">
+                {compiledResult && (
+                  <ExecuteTab
+                    ref={executeTabRef}
+                    compiledResult={compiledResult}
+                    example={currentExample}
+                    onExecuteStart={() => setIsExecuting(true)}
+                    onExecuteEnd={() => setIsExecuting(false)}
+                  />
+                )}
+              </TabsContent>
+            </div>
+          </Tabs>
+        </div>
       </main>
+
+      <KeyboardShortcutsHelp isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
+      {activeTab === 'schema' && (<StickyActionBar action="compile" onAction={() => schemaEditorRef.current?.compile()} disabled={isCompiling} isLoading={isCompiling}/>)}
+      {activeTab === 'execute' && compiledResult && (<StickyActionBar action="execute" onAction={() => executeTabRef.current?.execute()} disabled={isExecuting} isLoading={isExecuting}/>)}
+      {!(activeTab === 'schema' || (activeTab === 'execute' && compiledResult)) && (
+        <div className="fixed inset-x-0 bottom-0 h-[var(--bottom-bar-h)] border-t bg-background/80 backdrop-blur z-40" />
+      )}
     </div>
   );
 }

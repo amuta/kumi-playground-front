@@ -22,6 +22,29 @@ export type ExampleMode = 'notebook' | 'canvas' | 'simulation';
 
 export type VisualizationType = 'json' | 'table' | 'grid';
 
+export type ExecutionConfig = {
+  type: 'single' | 'continuous';
+  continuous?: {
+    feedback_mappings: Array<{
+      from_output: string;
+      to_input: string;
+    }>;
+    max_iterations?: number;
+    auto_start?: boolean;
+    playback_speed?: number;
+  };
+};
+
+export type VisualizationConfig = {
+  outputs: Record<string, {
+    type: VisualizationType;
+    grid?: {
+      cell_render?: 'numeric' | 'boolean' | 'custom';
+      cell_map?: Record<string, string>;
+    };
+  }>;
+};
+
 export type CanvasConfig = {
   render: 'grid2d';
   controls?: {
@@ -46,6 +69,8 @@ export type Example = {
   schema_src: string;
   mode: ExampleMode;
   base_input?: Record<string, any>;
+  execution_config?: ExecutionConfig;
+  visualization_config?: VisualizationConfig;
   canvas_config?: CanvasConfig;
   simulation_config?: SimulationConfig;
   visualizations?: Record<string, VisualizationType>;

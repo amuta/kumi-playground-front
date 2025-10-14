@@ -6,8 +6,10 @@ import { userFilter } from './user-filter';
 import { nestedHash } from './nested-hash';
 import { tupleFunctions } from './tuple-functions';
 import { gridShift } from './grid-shift';
+import { gameOfLife } from './game-of-life';
 
 export const examples: Example[] = [
+  gameOfLife,
   arithmetic,
   shoppingCart,
   arrayOperations,

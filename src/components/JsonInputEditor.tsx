@@ -8,7 +8,12 @@ interface JsonInputEditorProps {
   height?: string;
 }
 
-export function JsonInputEditor({ value, onChange, onError, height = '400px' }: JsonInputEditorProps) {
+export function JsonInputEditor({
+  value,
+  onChange,
+  onError,
+  height = '100%',
+}: JsonInputEditorProps) {
   const [editorValue, setEditorValue] = useState(() => JSON.stringify(value, null, 2));
 
   useEffect(() => {
@@ -17,9 +22,7 @@ export function JsonInputEditor({ value, onChange, onError, height = '400px' }: 
 
   const handleChange = (newValue: string | undefined) => {
     if (!newValue) return;
-
     setEditorValue(newValue);
-
     try {
       const parsed = JSON.parse(newValue);
       onChange(parsed);

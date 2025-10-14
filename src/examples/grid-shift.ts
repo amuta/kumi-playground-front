@@ -25,18 +25,19 @@ export const gridShift: Example = {
 end`,
   base_input: {
     rows: [
-      [1, 2, 3],
-      [10, 20, 30],
+      [100, 100, 100],
+      [100, 255, 100],
+      [100, 100, 100],
     ],
   },
-  visualizations: {
-    shift_cols_right_zero: 'grid',
-    shift_cols_right_wrap: 'grid',
-    shift_cols_left_zero: 'grid',
-    shift_cols_left_wrap: 'grid',
-    shift_rows_down_zero: 'grid',
-    shift_rows_down_wrap: 'grid',
-    shift_rows_up_zero: 'grid',
-    shift_rows_up_wrap: 'grid',
-  },
+  // visualizations: {
+  //   shift_cols_right_zero: 'grid',
+  //   shift_cols_right_wrap: 'grid',
+  //   shift_cols_left_zero: 'grid',
+  //   shift_cols_left_wrap: 'grid',
+  //   shift_rows_down_zero: 'grid',
+  //   shift_rows_down_wrap: 'grid',
+  //   shift_rows_up_zero: 'grid',
+  //   shift_rows_up_wrap: 'grid',
+  // },
 };

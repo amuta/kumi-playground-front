@@ -27,7 +27,7 @@ export function ExampleSelector({
 
   return (
     <Select value={currentExample.id} onValueChange={handleValueChange}>
-      <SelectTrigger className="w-[280px]">
+      <SelectTrigger className="w-[280px] border-2 border-border bg-muted text-foreground hover:bg-accent hover:border-primary transition-all">
         <SelectValue placeholder="Select an example" />
       </SelectTrigger>
       <SelectContent>

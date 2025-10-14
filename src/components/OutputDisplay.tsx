@@ -43,16 +43,16 @@ export function OutputDisplay({ results, example }: OutputDisplayProps) {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col h-full min-h-0 space-y-6">
       {Object.keys(jsonOutputs).length > 0 && (
-        <div>
-          <JsonOutputViewer value={jsonOutputs} />
+        <div className="flex-1 min-h-0">
+          <JsonOutputViewer value={jsonOutputs} height="100%" />
         </div>
       )}
-      {customVisualizations.map(({ name, value, vizType }) => {
-        const Visualizer = visualizers[vizType];
-        return <Visualizer key={name} name={name} value={value} />;
-      })}
-    </div>
-  );
+       {customVisualizations.map(({ name, value, vizType }) => {
+         const Visualizer = visualizers[vizType];
+         return <Visualizer key={name} name={name} value={value} />;
+       })}
+     </div>
+   );
 }
