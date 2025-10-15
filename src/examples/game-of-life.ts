@@ -14,8 +14,6 @@ export const gameOfLife: Example = {
   end
 
   let :a, input.rows.col.alive
-
-  # axis_offset: 0 = x, 1 = y
   let :n,  shift(a, -1, axis_offset: 1)
   let :s,  shift(a,  1, axis_offset: 1)
   let :w,  shift(a, -1)
@@ -24,34 +22,33 @@ export const gameOfLife: Example = {
   let :ne, shift(n,  1)
   let :sw, shift(s, -1)
   let :se, shift(s,  1)
-
   let :neighbors, fn(:sum, [n, s, w, e, nw, ne, sw, se])
 
-  # Conway rules
   let :alive, a > 0
   let :n3_alive, neighbors == 3
   let :n2_alive, neighbors == 2
   let :keep_alive, n2_alive & alive
-
   let :next_alive, n3_alive | keep_alive
 
   value :next_state, select(next_alive, 1, 0)
 end`,
-  base_input: {
-    rows: [
-      [0, 0, 0, 0, 0],
-      [0, 0, 1, 0, 0],
-      [0, 0, 1, 0, 0],
-      [0, 0, 1, 0, 0],
-      [0, 0, 0, 0, 0],
-    ],
-  },
+  // remove base_input; generate via canvas_config
   visualization_config: { outputs: { next_state: { type: 'grid' } } },
   execution_config: {
     type: 'continuous',
     continuous: {
       feedback_mappings: [{ from_output: 'next_state', to_input: 'rows' }],
-      playback_speed: 250,
+      playback_speed: 120,
+    },
+  },
+  canvas_config: {
+    render: 'grid2d',
+    controls: {
+      speed: { min: 50, max: 500, default: 120 },
+      seed: { default: 42 },
+      width: { default: 120 },   // big example
+      height: { default: 80 },
+      density: { default: 0.18 },
     },
   },
 };

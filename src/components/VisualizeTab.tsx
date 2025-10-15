@@ -6,14 +6,16 @@ import { VisualizationEngine } from '@/visualization/engine';
 import { windowScheduler } from '@/visualization/scheduler';
 import { loadArtifactModule } from '@/execution/artifact-runner';
 import type { CompileResponse } from '@/api/compile';
-import type { Example, VisualizationConfig, ExecutionConfig } from '@/types';
+import { makeBinaryGrid } from '@/input-gen/grid';
+import type { Example, VisualizationConfig, ExecutionConfig, CanvasConfig } from '@/types';
 
 interface VisualizeTabProps {
   compiledResult: CompileResponse;
   example?: Example;
   visualizationConfig?: VisualizationConfig;
   executionConfig?: ExecutionConfig;
-  enabled?: boolean; // new
+  canvasConfig?: CanvasConfig;
+  enabled?: boolean;
 }
 
 export interface VisualizeTabRef {
@@ -30,12 +32,15 @@ export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(funct
   const [outputs, setOutputs] = useState<Record<string, any> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [stepCount, setStepCount] = useState(0);
 
   if (controllerRef.current == null) {
     controllerRef.current = new VisualizationController(windowScheduler);
     controllerRef.current.onUpdate = (snap) => {
       setOutputs(snap.outputs);
       setIsPlaying(controllerRef.current?.isPlaying ?? false);
+      setStepCount(snap.stepCount);
+
     };
     controllerRef.current.onError = (msg) => setError(msg);
   }
@@ -66,18 +71,39 @@ export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(funct
         const mod = await loadArtifactModule(url);
         if (!mounted) return;
 
+
+        // inside useEffect before creating engine:
+        const cfg = example?.canvas_config?.controls;
+        const generatedInput =
+          !example?.base_input && example?.canvas_config?.render === 'grid2d'
+            ? {
+              rows: makeBinaryGrid(
+                cfg?.height?.default ?? 40,
+                cfg?.width?.default ?? 60,
+                cfg?.density?.default ?? 0.18,
+                cfg?.seed?.default
+              ),
+            }
+            : undefined;
+
+        const initialInput = example?.base_input ?? generatedInput;
+
         const engine = new VisualizationEngine({
           mod,
           outputSchema: compiledResult.output_schema,
           execConfig: executionConfig,
-          initialInput: example?.base_input,
+          initialInput,
         });
 
-        await controllerRef.current!.init({ engine, baseInput: example?.base_input });
+        await controllerRef.current!.init({
+          engine,
+          baseInput: initialInput,
+        });
 
         setOutputs(null);
         setError(null);
         setIsPlaying(controllerRef.current?.isPlaying ?? false);
+        setStepCount(0);
       } catch (e) {
         if (!mounted) return;
         setError(e instanceof Error ? e.message : 'Failed to load artifact');
@@ -120,6 +146,7 @@ export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(funct
               <div className="text-sm text-muted-foreground">
                 {enabled ? (isPlaying ? 'Playing' : 'Paused') : 'Visualization disabled'}
               </div>
+              <div className="text-xs text-muted-foreground">Step: {stepCount}</div> {/* NEW */}
             </div>
 
             {!enabled ? (

@@ -1,20 +1,20 @@
+// COPY-AND-REPLACE: ./src/components/SchemaTabContainer.tsx
 import { useState, forwardRef, useImperativeHandle, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SchemaEditor, type SchemaEditorRef } from '@/components/SchemaEditor';
 import { ConfigEditor } from '@/components/ConfigEditor';
-import type { ExecutionConfig, VisualizationConfig } from '@/types';
-import { compileSchema, type CompileResponse } from '@/api/compile';
-
-// Replace the useImperativeHandle block with:
-
+import type { CompileResponse } from '@/api/compile';
+import type { ExecutionConfig, VisualizationConfig, CanvasConfig } from '@/types';
 
 interface SchemaTabContainerProps {
   schemaSource: string;
   onSchemaSourceChange: (source: string) => void;
   executionConfig: ExecutionConfig;
   visualizationConfig: VisualizationConfig;
+  canvasConfig: CanvasConfig;
   onExecutionConfigChange: (config: ExecutionConfig) => void;
   onVisualizationConfigChange: (config: VisualizationConfig) => void;
+  onCanvasConfigChange: (config: CanvasConfig) => void;
   onCompileSuccess: (result: CompileResponse) => void;
   onCompileError: (error: string) => void;
   compileError: string | null;
@@ -33,8 +33,10 @@ export const SchemaTabContainer = forwardRef<SchemaTabContainerRef, SchemaTabCon
       onSchemaSourceChange,
       executionConfig,
       visualizationConfig,
+      canvasConfig,
       onExecutionConfigChange,
       onVisualizationConfigChange,
+      onCanvasConfigChange,
       onCompileSuccess,
       onCompileError,
       compileError,
@@ -47,21 +49,8 @@ export const SchemaTabContainer = forwardRef<SchemaTabContainerRef, SchemaTabCon
     const schemaEditorRef = useRef<SchemaEditorRef>(null);
 
     useImperativeHandle(ref, () => ({
-      compile: async () => {
-        if (schemaEditorRef.current) return schemaEditorRef.current.compile();
-        // editor unmounted (e.g., on Config subtab): compile current source directly
-        onCompileStart?.();
-        try {
-          const result: CompileResponse = await compileSchema(schemaSource);
-          onCompileSuccess(result);
-        } catch (e) {
-          onCompileError(e instanceof Error ? e.message : 'Compilation failed');
-        } finally {
-          onCompileEnd?.();
-        }
-      },
+      compile: async () => { await schemaEditorRef.current?.compile(); },
     }));
-
 
     return (
       <Tabs value={schemaSubTab} onValueChange={setSchemaSubTab} className="h-full flex flex-col">
@@ -84,13 +73,14 @@ export const SchemaTabContainer = forwardRef<SchemaTabContainerRef, SchemaTabCon
             />
           </TabsContent>
 
-
           <TabsContent value="config" className="m-0 h-full">
             <ConfigEditor
               executionConfig={executionConfig}
               visualizationConfig={visualizationConfig}
+              canvasConfig={canvasConfig}
               onExecutionConfigChange={onExecutionConfigChange}
               onVisualizationConfigChange={onVisualizationConfigChange}
+              onCanvasConfigChange={onCanvasConfigChange}
             />
           </TabsContent>
         </div>

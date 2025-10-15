@@ -49,14 +49,6 @@ export type VisualizationConfig = {
   }>;
 };
 
-export type CanvasConfig = {
-  render: 'grid2d';
-  controls?: {
-    speed?: { min: number; max: number; default: number };
-    seed?: { default: number };
-  };
-};
-
 export type SimulationConfig = {
   iterations: number;
   random_fields: Record<
@@ -87,4 +79,15 @@ export type Statistics = {
   min: number;
   max: number;
   p95: number;
+};
+
+export type CanvasConfig = {
+  render: 'grid2d';
+  controls?: {
+    speed?: { min: number; max: number; default: number };
+    seed?: { default: number };
+    width?: { default: number };  
+    height?: { default: number }; 
+    density?: { default: number };
+  };
 };

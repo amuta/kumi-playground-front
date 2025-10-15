@@ -1,4 +1,3 @@
-// COPY-AND-REPLACE: ./src/components/visualizers/GridVisualizer.tsx
 import { useEffect, useRef } from 'react';
 
 interface GridVisualizerProps {

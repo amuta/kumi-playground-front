@@ -1,5 +1,6 @@
+// COPY-AND-REPLACE: ./src/hooks/useExampleState.ts
 import { useState, useEffect, useRef } from 'react';
-import type { Example, ExecutionConfig, VisualizationConfig } from '@/types';
+import type { Example, ExecutionConfig, VisualizationConfig, CanvasConfig } from '@/types';
 import type { CompileResponse } from '@/api/compile';
 
 interface ExampleState {
@@ -7,6 +8,7 @@ interface ExampleState {
   compiledResult: CompileResponse | null;
   executionConfig: ExecutionConfig;
   visualizationConfig: VisualizationConfig;
+  canvasConfig: CanvasConfig;
 }
 
 export function useExampleState(example: Example) {
@@ -14,15 +16,13 @@ export function useExampleState(example: Example) {
   const currentExampleId = useRef<string>(example.id);
 
   const getInitialState = (ex: Example): ExampleState => {
-    if (stateCache.current[ex.id]) {
-      return stateCache.current[ex.id];
-    }
-
+    if (stateCache.current[ex.id]) return stateCache.current[ex.id];
     return {
       schemaSource: ex.schema_src,
       compiledResult: null,
       executionConfig: ex.execution_config || { type: 'single' },
       visualizationConfig: ex.visualization_config || { outputs: {} },
+      canvasConfig: ex.canvas_config || { render: 'grid2d', controls: {} },
     };
   };
 
@@ -49,5 +49,7 @@ export function useExampleState(example: Example) {
     setExecutionConfig: (executionConfig: ExecutionConfig) => setState(s => ({ ...s, executionConfig })),
     visualizationConfig: state.visualizationConfig,
     setVisualizationConfig: (visualizationConfig: VisualizationConfig) => setState(s => ({ ...s, visualizationConfig })),
+    canvasConfig: state.canvasConfig,
+    setCanvasConfig: (canvasConfig: CanvasConfig) => setState(s => ({ ...s, canvasConfig })),
   };
 }

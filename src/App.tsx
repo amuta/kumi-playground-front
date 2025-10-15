@@ -1,4 +1,3 @@
-// COPY-AND-REPLACE: ./src/App.tsx
 import { useState, useRef, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SchemaTabContainer, type SchemaTabContainerRef } from '@/components/SchemaTabContainer';
@@ -46,6 +45,8 @@ export function App() {
     setExecutionConfig,
     visualizationConfig,
     setVisualizationConfig,
+    canvasConfig,
+    setCanvasConfig,
   } = useExampleState(currentExample);
 
   const [compileError, setCompileError] = useState<string | null>(null);
@@ -157,14 +158,18 @@ export function App() {
                   onSchemaSourceChange={setSchemaSource}
                   executionConfig={executionConfig}
                   visualizationConfig={visualizationConfig}
+                  canvasConfig={canvasConfig}
                   onExecutionConfigChange={setExecutionConfig}
                   onVisualizationConfigChange={setVisualizationConfig}
+                  onCanvasConfigChange={setCanvasConfig}
                   onCompileSuccess={handleCompileSuccess}
                   onCompileError={handleCompileError}
                   compileError={compileError}
                   onCompileStart={() => setIsCompiling(true)}
                   onCompileEnd={() => setIsCompiling(false)}
                 />
+
+
               </TabsContent>
 
               <TabsContent value="compiled" className="m-0 h-full">
@@ -197,6 +202,7 @@ export function App() {
                     visualizationConfig={visualizationConfig}
                     executionConfig={executionConfig}
                     enabled={canVisualize}
+                    canvasConfig={canvasConfig}
                   />
                 )}
               </TabsContent>
