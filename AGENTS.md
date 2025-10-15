@@ -30,7 +30,7 @@ This demo showcases Kumi end-to-end with **artifact-only** execution. Three role
  → CompileResult{ artifact_url, input_form_schema, output_schema, schema_hash, js_src?, ruby_src?, lir? }
  → ExecuteTab
  → runAllOutputsFromUrl(artifact_url, input, output_schema)
- → OutputDisplay`
+ → OutputView`
 
 ## Compiler contract
 - Request: `{ schema_src }` to `{API_BASE}/api/kumi/compile`.
@@ -38,7 +38,7 @@ This demo showcases Kumi end-to-end with **artifact-only** execution. Three role
 - Failure: UI surfaces first `errors[0]` or `Compilation failed`.
 
 ## Visualization
-- Router: `OutputDisplay`.
+- Router: `OutputView`.
 - Precedence: `visualization_config.outputs[name]?.type` → `example.visualizations?.[name]` → `json`.
 - `grid` applies `visualization_config.outputs[name].grid.cell_map` if present.
 - Renderers: `JsonOutputViewer`, `TableVisualizer`, `GridVisualizer`. Fallback is JSON.
@@ -58,7 +58,7 @@ This demo showcases Kumi end-to-end with **artifact-only** execution. Three role
 - No runtime mutation of compiled artifacts.
 
 ## Extending the demo
-- New visualizer: add component and register in the map inside `OutputDisplay`.
+- New visualizer: add component and register in the map inside `OutputView`.
 - New execution mode: extend `ExecutionConfig` and add a pure runner; View only drives timing.
 - New example: add to `examples/*` with `schema_src`, `base_input`, and optional configs.
 

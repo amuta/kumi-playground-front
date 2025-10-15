@@ -24,7 +24,7 @@ Schema(edit)
 → CompileResult{ artifact_url, input_form_schema, output_schema, js_src?, ruby_src?, lir? }
 → ExecuteTab
 → runAllOutputsFromUrl(artifact_url, input, output_schema)
-→ OutputDisplay(visualize)
+→ OutputView(visualize)
 
 ````
 

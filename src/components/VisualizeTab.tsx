@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { OutputDisplay } from '@/components/OutputDisplay';
+import { OutputView } from '@/components/OutputView';
 import { loadArtifactModule, runAllOutputs } from '@/execution/artifact-runner';
 import { applyFeedbackMappings } from '@/execution/feedback-loop';
 import type { CompileResponse } from '@/api/compile';
@@ -114,7 +114,7 @@ export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(funct
               <div className="text-destructive font-mono text-sm">{error}</div>
             ) : outputs ? (
               <div className="flex-1 min-h-0">
-                <OutputDisplay
+                <OutputView
                   results={outputs}
                   outputSchema={compiledResult.output_schema}
                   example={example}

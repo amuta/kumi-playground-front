@@ -43,7 +43,7 @@ App
     └── ExecuteTab
         ├── InputForm (auto-generated)
         ├── ExecuteButton
-        └── OutputDisplay (ASCII renderers)
+        └── OutputView (ASCII renderers)
 ```
 
 ## Data Flow

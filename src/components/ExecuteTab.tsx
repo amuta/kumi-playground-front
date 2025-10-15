@@ -2,7 +2,7 @@
 import { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { JsonInputEditor } from '@/components/JsonInputEditor';
-import { OutputDisplay } from '@/components/OutputDisplay';
+import { OutputView } from '@/components/OutputView';
 import { runAllOutputsFromUrl } from '@/execution/artifact-runner';
 import { applyFeedbackMappings } from '@/execution/feedback-loop';
 import type { CompileResponse } from '@/api/compile';
@@ -116,7 +116,7 @@ export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function Ex
             <Card className="shadow-lg border-2 flex-1 flex flex-col overflow-hidden min-h-0">
               <CardContent className="pt-6 flex-1 min-h-0 flex flex-col">
                 <div className="flex-1 min-h-0">
-                  <OutputDisplay
+                  <OutputView
                     results={executionResult}
                     outputSchema={compiledResult.output_schema}
                     example={example}

@@ -3,7 +3,7 @@ import { JsonOutputViewer } from './JsonOutputViewer';
 import { TableVisualizer } from './visualizers/TableVisualizer';
 import { GridVisualizer } from './visualizers/GridVisualizer';
 
-interface OutputDisplayProps {
+interface OutputViewProps {
   results: Record<string, any>;
   outputSchema: Record<string, OutputField>;
   example?: Example;
@@ -16,7 +16,7 @@ const visualizers = {
   grid: GridVisualizer,
 } as const;
 
-export function OutputDisplay({ results, example, visualizationConfig }: OutputDisplayProps) {
+export function OutputView({ results, example, visualizationConfig }: OutputViewProps) {
   const getVisualizationType = (outputName: string): VisualizationType => {
     const fromConfig = visualizationConfig?.outputs?.[outputName]?.type as VisualizationType | undefined;
     if (fromConfig && fromConfig in visualizers) return fromConfig;

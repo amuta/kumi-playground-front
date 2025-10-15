@@ -83,7 +83,7 @@ describe('App', () => {
     compileButton.click();
 
     await waitFor(() => {
-      const runButton = screen.getByRole('button', { name: /Run/i });
+      const runButton = screen.getByRole('button', { name: /Visualize/i });
       expect(runButton).toBeInTheDocument();
     });
   });

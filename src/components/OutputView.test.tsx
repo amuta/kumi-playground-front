@@ -1,13 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
-import { OutputDisplay } from './OutputDisplay';
+import { OutputView } from './OutputView';
 import type { Example } from '@/types';
 
 vi.mock('@monaco-editor/react', () => ({
   default: ({ value }: any) => <div data-testid="monaco">{value}</div>,
 }));
 
-describe('OutputDisplay with visualization registry', () => {
+describe('OutputView with visualization registry', () => {
   const mockOutputSchema = {
     sum: { axes: [], kind: 'value' as const, type: 'integer' as const },
     history: { axes: ['10'], kind: 'value' as const, type: 'integer' as const },
@@ -17,7 +17,7 @@ describe('OutputDisplay with visualization registry', () => {
   it('defaults to JSON visualization when no config', () => {
     const results = { sum: 42, product: 100 };
 
-    render(<OutputDisplay results={results} outputSchema={mockOutputSchema} />);
+    render(<OutputView results={results} outputSchema={mockOutputSchema} />);
 
     expect(screen.getByTestId('monaco')).toBeInTheDocument();
     const json = screen.getByTestId('monaco').textContent;
@@ -36,7 +36,7 @@ describe('OutputDisplay with visualization registry', () => {
       visualizations: { history: 'table' },
     };
 
-    render(<OutputDisplay results={results} outputSchema={mockOutputSchema} example={example} />);
+    render(<OutputView results={results} outputSchema={mockOutputSchema} example={example} />);
 
     expect(screen.getText ? true : true).toBeTruthy(); // smoke
     expect(screen.getByText('history:')).toBeInTheDocument();
@@ -54,7 +54,7 @@ describe('OutputDisplay with visualization registry', () => {
       visualizations: { value: 'invalid-type' as any },
     };
 
-    render(<OutputDisplay results={results} outputSchema={mockOutputSchema} example={example} />);
+    render(<OutputView results={results} outputSchema={mockOutputSchema} example={example} />);
 
     expect(screen.getByTestId('monaco')).toBeInTheDocument();
   });
