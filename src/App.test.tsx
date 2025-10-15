@@ -1,13 +1,22 @@
-import { render, screen } from '@testing-library/react';
-import { describe, test, vi, expect } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
+import { describe, test, vi, expect, beforeEach } from 'vitest';
 
 vi.mock('@monaco-editor/react', () => ({
   default: () => <div>Monaco Editor</div>,
 }));
 
+vi.mock('@/api/compile', () => ({
+  compileSchema: vi.fn(),
+}));
+
 import { App } from './App';
+import { compileSchema } from '@/api/compile';
 
 describe('App', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   test('renders main navigation tabs', () => {
     render(<App />);
 
@@ -31,6 +40,29 @@ describe('App', () => {
     render(<App />);
 
     expect(screen.getByRole('button', { name: /Compile/i })).toBeInTheDocument();
+  });
+
+  test('switches to Compiled Code tab after successful compile', async () => {
+    const mockResult = {
+      artifact_url: 'https://example.com/artifact.js',
+      js_src: 'function _sum() {}',
+      ruby_src: 'def sum; end',
+      lir: 'sum: () -> int',
+      schema_hash: 'abc123',
+      input_form_schema: {},
+      output_schema: {},
+    };
+    vi.mocked(compileSchema).mockResolvedValue(mockResult);
+
+    render(<App />);
+
+    const compileButton = screen.getByRole('button', { name: /Compile/i });
+    compileButton.click();
+
+    await waitFor(() => {
+      const compiledTab = screen.getByRole('tab', { name: /Compiled Code/i });
+      expect(compiledTab).toHaveAttribute('data-state', 'active');
+    });
   });
 
 });

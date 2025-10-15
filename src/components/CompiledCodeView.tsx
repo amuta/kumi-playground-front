@@ -1,15 +1,27 @@
 import Editor from '@monaco-editor/react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Play } from 'lucide-react';
 import type { CompileResponse } from '@/api/compile';
 
 interface CompiledCodeViewProps {
   result: CompileResponse;
+  onNavigateToExecute?: () => void;
 }
 
-export function CompiledCodeView({ result }: CompiledCodeViewProps) {
+export function CompiledCodeView({ result, onNavigateToExecute }: CompiledCodeViewProps) {
   return (
     <div>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-foreground">Compiled Code</h2>
+        {onNavigateToExecute && (
+          <Button onClick={onNavigateToExecute} className="gap-2">
+            <Play className="h-4 w-4" />
+            Run
+          </Button>
+        )}
+      </div>
       <Tabs defaultValue="js">
         <TabsList>
           <TabsTrigger value="js">JavaScript</TabsTrigger>

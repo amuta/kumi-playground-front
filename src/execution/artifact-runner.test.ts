@@ -29,7 +29,6 @@ describe('executeOutput / runAllOutputs (pure helpers)', () => {
     };
     const results = runAllOutputs(mockModule, { price: 2, qty: 5, x: 7 }, outputSchema);
     expect(results).toEqual({ total: 10, doubled: 14 });
-    // @ts-expect-error trait should not exist
     expect(results.flag).toBeUndefined();
   });
 });

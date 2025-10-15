@@ -39,7 +39,7 @@ export function App() {
   const handleCompileSuccess = (result: CompileResponse) => {
     setCompiledResult(result);
     setCompileError(null);
-    setActiveTab('execute');
+    setActiveTab('compiled');
   };
   const handleCompileError = (error: string) => { setCompileError(error); setCompiledResult(null); };
   const handleExampleChange = (example: Example) => {
@@ -111,7 +111,7 @@ export function App() {
               </TabsContent>
 
               <TabsContent value="compiled" className="m-0 h-full">
-                {compiledResult && <CompiledCodeView result={compiledResult} />}
+                {compiledResult && <CompiledCodeView result={compiledResult} onNavigateToExecute={() => setActiveTab('execute')} />}
               </TabsContent>
 
               <TabsContent value="execute" className="m-0 h-full">
