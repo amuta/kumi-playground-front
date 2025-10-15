@@ -50,12 +50,38 @@ export function App() {
   };
 
   useKeyboard({
-    'meta+1': () => setActiveTab('schema'),
-    'meta+2': () => compiledResult && setActiveTab('compiled'),
-    'meta+3': () => compiledResult && setActiveTab('execute'),
-    'ctrl+1': () => setActiveTab('schema'),
-    'ctrl+2': () => compiledResult && setActiveTab('compiled'),
-    'ctrl+3': () => compiledResult && setActiveTab('execute'),
+    'meta+1': () => {
+      (document.activeElement as HTMLElement)?.blur();
+      setActiveTab('schema');
+    },
+    'meta+2': () => {
+      if (compiledResult) {
+        (document.activeElement as HTMLElement)?.blur();
+        setActiveTab('compiled');
+      }
+    },
+    'meta+3': () => {
+      if (compiledResult) {
+        (document.activeElement as HTMLElement)?.blur();
+        setActiveTab('execute');
+      }
+    },
+    'ctrl+1': () => {
+      (document.activeElement as HTMLElement)?.blur();
+      setActiveTab('schema');
+    },
+    'ctrl+2': () => {
+      if (compiledResult) {
+        (document.activeElement as HTMLElement)?.blur();
+        setActiveTab('compiled');
+      }
+    },
+    'ctrl+3': () => {
+      if (compiledResult) {
+        (document.activeElement as HTMLElement)?.blur();
+        setActiveTab('execute');
+      }
+    },
     'meta+s': () => schemaTabContainerRef.current?.compile(),
     'ctrl+s': () => schemaTabContainerRef.current?.compile(),
     'meta+enter': () => {
