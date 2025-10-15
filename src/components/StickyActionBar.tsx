@@ -1,10 +1,9 @@
-// components/StickyActionBar.tsx
 import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Play, Code } from 'lucide-react';
+import { Play, Pause, Code, Eye } from 'lucide-react';
 
 interface StickyActionBarProps {
-  action: 'compile' | 'execute' | 'run';
+  action: 'compile' | 'execute' | 'run' | 'visualize' | 'play' | 'pause';
   onAction: () => void;
   disabled?: boolean;
   isLoading?: boolean;
@@ -17,6 +16,9 @@ interface StickyActionBarProps {
 export function StickyActionBar({ action, onAction, disabled, isLoading }: StickyActionBarProps) {
   const isCompile = action === 'compile';
   const isRun = action === 'run';
+  const isVisualize = action === 'visualize';
+  const isPlay = action === 'play';
+  const isPause = action === 'pause';
   const [showLoading, setShowLoading] = useState(false);
 
   useEffect(() => {
@@ -49,24 +51,13 @@ export function StickyActionBar({ action, onAction, disabled, isLoading }: Stick
           </>
         ) : (
           <>
-            {isCompile ? (
-              <>
-                <Code className="h-5 w-5" />
-                Compile
-              </>
-            ) : isRun ? (
-              <>
-                <Play className="h-5 w-5" />
-                Run
-              </>
-            ) : (
-              <>
-                <Play className="h-5 w-5" />
-                Execute
-              </>
-            )}
+            {isCompile && (<><Code className="h-5 w-5" />Compile</>)}
+            {isRun && (<><Play className="h-5 w-5" />Run</>)}
+            {isVisualize && (<><Eye className="h-5 w-5" />Visualize</>)}
+            {isPlay && (<><Play className="h-5 w-5" />Play</>)}
+            {isPause && (<><Pause className="h-5 w-5" />Pause</>)}
             <kbd className="ml-8 px-2 py-1 text-xs font-mono bg-primary-foreground/20 rounded">
-              {isRun ? '[Ctrl]+[Enter]' : '[Ctrl]+[Enter]'}
+              {isPlay || isPause ? '[Ctrl]+[Enter]' : '[Ctrl]+[Enter]'}
             </kbd>
           </>
         )}

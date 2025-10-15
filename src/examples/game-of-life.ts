@@ -46,22 +46,12 @@ end`,
       [0, 0, 0, 0, 0],
     ],
   },
-  // Make the visualizer show a grid for next_state
-  visualization_config: {
-    outputs: {
-      next_state: { type: 'grid' },
-    },
-  },
-  // Enable feedback so iterations can run without manual edits
+  visualization_config: { outputs: { next_state: { type: 'grid' } } },
   execution_config: {
     type: 'continuous',
     continuous: {
-      feedback_mappings: [
-        { from_output: 'next_state', to_input: 'rows' },
-      ],
-      max_iterations: 9999,
-      auto_start: false,        // user presses Play
-      playback_speed: 250,      // ms per step
+      feedback_mappings: [{ from_output: 'next_state', to_input: 'rows' }],
+      playback_speed: 250,
     },
   },
 };

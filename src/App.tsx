@@ -1,3 +1,4 @@
+// src/App.tsx
 import { useState, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SchemaTabContainer, type SchemaTabContainerRef } from '@/components/SchemaTabContainer';
@@ -9,6 +10,7 @@ import { StickyActionBar } from '@/components/StickyActionBar';
 import { Button } from '@/components/ui/button';
 import { Keyboard } from 'lucide-react';
 import { useKeyboard } from '@/hooks/useKeyboard';
+import { VisualizeTab, type VisualizeTabRef } from '@/components/VisualizeTab';
 import { useExampleState } from '@/hooks/useExampleState';
 import type { CompileResponse } from '@/api/compile';
 import { examples, getDefaultExample } from '@/examples';
@@ -17,6 +19,7 @@ import type { Example } from '@/types';
 export function App() {
   const schemaTabContainerRef = useRef<SchemaTabContainerRef>(null);
   const executeTabRef = useRef<ExecuteTabRef>(null);
+  const visualizeTabRef = useRef<VisualizeTabRef>(null);
   const [currentExample, setCurrentExample] = useState<Example>(getDefaultExample());
 
   const {
@@ -41,7 +44,9 @@ export function App() {
     setCompileError(null);
     setActiveTab('compiled');
   };
+
   const handleCompileError = (error: string) => { setCompileError(error); setCompiledResult(null); };
+
   const handleExampleChange = (example: Example) => {
     setCurrentExample(example);
     setCompiledResult(null);
@@ -50,35 +55,48 @@ export function App() {
   };
 
   useKeyboard({
+    'meta+1': () => { (document.activeElement as HTMLElement)?.blur(); setActiveTab('schema'); },
+    'meta+2': () => { if (compiledResult) { (document.activeElement as HTMLElement)?.blur(); setActiveTab('compiled'); } },
+    'meta+3': () => { if (compiledResult) { (document.activeElement as HTMLElement)?.blur(); setActiveTab('execute'); } },
+    'meta+4': () => { if (compiledResult) { (document.activeElement as HTMLElement)?.blur(); setActiveTab('visualize'); } },
+    'ctrl+1': () => { (document.activeElement as HTMLElement)?.blur(); setActiveTab('schema'); },
+    'ctrl+2': () => { if (compiledResult) { (document.activeElement as HTMLElement)?.blur(); setActiveTab('compiled'); } },
+    'ctrl+3': () => { if (compiledResult) { (document.activeElement as HTMLElement)?.blur(); setActiveTab('execute'); } },
+    'ctrl+4': () => { if (compiledResult) { (document.activeElement as HTMLElement)?.blur(); setActiveTab('visualize'); } },
     'meta+enter': () => {
       const blur = () => (document.activeElement as HTMLElement)?.blur();
-      const go = (tab: 'schema' | 'compiled' | 'execute') => requestAnimationFrame(() => setActiveTab(tab));
+      const go = (tab: 'schema' | 'compiled' | 'execute' | 'visualize') =>
+        requestAnimationFrame(() => setActiveTab(tab));
 
       if (activeTab === 'schema') {
         blur();
         schemaTabContainerRef.current?.compile();
       } else if (activeTab === 'compiled') {
         blur();
-        go('execute');
+        go('visualize');     // was 'execute'
+      } else if (activeTab === 'visualize') {
+        visualizeTabRef.current?.togglePlay();
       } else {
         executeTabRef.current?.execute();
       }
     },
     'ctrl+enter': () => {
       const blur = () => (document.activeElement as HTMLElement)?.blur();
-      const go = (tab: 'schema' | 'compiled' | 'execute') => requestAnimationFrame(() => setActiveTab(tab));
+      const go = (tab: 'schema' | 'compiled' | 'execute' | 'visualize') =>
+        requestAnimationFrame(() => setActiveTab(tab));
 
       if (activeTab === 'schema') {
         blur();
         schemaTabContainerRef.current?.compile();
       } else if (activeTab === 'compiled') {
         blur();
-        go('execute');
+        go('visualize');     // was 'execute'
+      } else if (activeTab === 'visualize') {
+        visualizeTabRef.current?.togglePlay();
       } else {
         executeTabRef.current?.execute();
       }
     },
-
   }, [compiledResult, activeTab]);
 
   return (
@@ -101,10 +119,11 @@ export function App() {
         <div className="h-full min-h-0 flex flex-col max-w-[1800px] mx-auto w-full p-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full min-h-0 flex flex-col">
             <div className="sticky top-0 z-20 bg-background">
-              <TabsList className="grid w-full grid-cols-3 mb-6">
+              <TabsList className="grid w-full grid-cols-4 mb-6">
                 <TabsTrigger value="schema" className="gap-3">Schema<kbd className="hidden sm:inline-block ml-auto px-1.5 py-0.5 text-xs font-mono bg-muted rounded">⌘1</kbd></TabsTrigger>
                 <TabsTrigger value="compiled" disabled={!compiledResult} className="gap-3">Compiled Code<kbd className="hidden sm:inline-block ml-auto px-1.5 py-0.5 text-xs font-mono bg-muted rounded">⌘2</kbd></TabsTrigger>
                 <TabsTrigger value="execute" disabled={!compiledResult} className="gap-3">Execute<kbd className="hidden sm:inline-block ml-auto px-1.5 py-0.5 text-xs font-mono bg-muted rounded">⌘3</kbd></TabsTrigger>
+                <TabsTrigger value="visualize" disabled={!compiledResult} className="gap-3">Visualize<kbd className="hidden sm:inline-block ml-auto px-1.5 py-0.5 text-xs font-mono bg-muted rounded">⌘4</kbd></TabsTrigger>
               </TabsList>
             </div>
 
@@ -136,9 +155,25 @@ export function App() {
                     ref={executeTabRef}
                     compiledResult={compiledResult}
                     example={currentExample}
-                    visualizationConfig={visualizationConfig}
+                    executionConfig={executionConfig}
+                    hideInput={
+                      executionConfig?.type === 'continuous' &&
+                      !!executionConfig.continuous?.feedback_mappings?.length
+                    }
                     onExecuteStart={() => setIsExecuting(true)}
                     onExecuteEnd={() => setIsExecuting(false)}
+                  />
+                )}
+              </TabsContent>
+
+              <TabsContent value="visualize" className="m-0 h-full">
+                {compiledResult && (
+                  <VisualizeTab
+                    ref={visualizeTabRef}
+                    compiledResult={compiledResult}
+                    example={currentExample}
+                    visualizationConfig={visualizationConfig}
+                    executionConfig={executionConfig}
                   />
                 )}
               </TabsContent>
@@ -148,10 +183,40 @@ export function App() {
       </main>
 
       <KeyboardShortcutsHelp isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
-      {activeTab === 'schema' && (<StickyActionBar action="compile" onAction={() => schemaTabContainerRef.current?.compile()} disabled={isCompiling} isLoading={isCompiling} />)}
-      {activeTab === 'compiled' && compiledResult && (<StickyActionBar action="run" onAction={() => setActiveTab('execute')} />)}
-      {activeTab === 'execute' && compiledResult && (<StickyActionBar action="execute" onAction={() => executeTabRef.current?.execute()} disabled={isExecuting} isLoading={isExecuting} />)}
-      {!(activeTab === 'schema' || (activeTab === 'compiled' && compiledResult) || (activeTab === 'execute' && compiledResult)) && (
+
+      {activeTab === 'schema' && (
+        <StickyActionBar
+          action="compile"
+          onAction={() => schemaTabContainerRef.current?.compile()}
+          disabled={isCompiling}
+          isLoading={isCompiling}
+        />
+      )}
+
+      {activeTab === 'compiled' && compiledResult && (
+        <StickyActionBar
+          action="visualize"
+          onAction={() => setActiveTab('visualize')}
+        />
+      )}
+
+      {activeTab === 'execute' && compiledResult && (
+        <StickyActionBar
+          action="execute"
+          onAction={() => executeTabRef.current?.execute()}
+          disabled={isExecuting}
+          isLoading={isExecuting}
+        />
+      )}
+
+      {activeTab === 'visualize' && compiledResult && (
+        <StickyActionBar
+          action={visualizeTabRef.current?.isPlaying ? 'pause' : 'play'}
+          onAction={() => visualizeTabRef.current?.togglePlay()}
+        />
+      )}
+
+      {!(activeTab === 'schema' || (activeTab === 'compiled' && compiledResult) || (activeTab === 'execute' && compiledResult) || (activeTab === 'visualize' && compiledResult)) && (
         <div className="fixed inset-x-0 bottom-0 h-[var(--bottom-bar-h)] border-t bg-background/80 backdrop-blur z-40" />
       )}
     </div>
