@@ -13,6 +13,7 @@ interface VisualizeTabProps {
   example?: Example;
   visualizationConfig?: VisualizationConfig;
   executionConfig?: ExecutionConfig;
+  enabled?: boolean; // new
 }
 
 export interface VisualizeTabRef {
@@ -22,7 +23,7 @@ export interface VisualizeTabRef {
 }
 
 export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(function VisualizeTab(
-  { compiledResult, example, visualizationConfig, executionConfig },
+  { compiledResult, example, visualizationConfig, executionConfig, enabled = true },
   ref
 ) {
   const controllerRef = useRef<VisualizationController | null>(null);
@@ -30,15 +31,25 @@ export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(funct
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  // build controller once
   if (controllerRef.current == null) {
     controllerRef.current = new VisualizationController(windowScheduler);
-    controllerRef.current.onUpdate = (snap) => setOutputs(snap.outputs);
+    controllerRef.current.onUpdate = (snap) => {
+      setOutputs(snap.outputs);
+      setIsPlaying(controllerRef.current?.isPlaying ?? false);
+    };
     controllerRef.current.onError = (msg) => setError(msg);
   }
 
-  // init engine when artifact_url or example changes
+  // If not enabled, do not init engine. Just show guidance.
   useEffect(() => {
+    if (!enabled) {
+      controllerRef.current?.pause();
+      setOutputs(null);
+      setError(null);
+      setIsPlaying(false);
+      return;
+    }
+
     const url = compiledResult.artifact_url;
     if (!url) {
       setError('No executable artifact available. Recompile to get artifact_url.');
@@ -50,7 +61,6 @@ export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(funct
     }
 
     let mounted = true;
-
     (async () => {
       try {
         const mod = await loadArtifactModule(url);
@@ -63,14 +73,11 @@ export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(funct
           initialInput: example?.base_input,
         });
 
-        await controllerRef.current!.init({
-          engine,
-          baseInput: example?.base_input,
-        });
+        await controllerRef.current!.init({ engine, baseInput: example?.base_input });
 
         setOutputs(null);
         setError(null);
-        setIsPlaying(false);
+        setIsPlaying(controllerRef.current?.isPlaying ?? false);
       } catch (e) {
         if (!mounted) return;
         setError(e instanceof Error ? e.message : 'Failed to load artifact');
@@ -80,12 +87,18 @@ export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(funct
     return () => {
       mounted = false;
       controllerRef.current?.pause();
+      setIsPlaying(false);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [compiledResult.artifact_url, example?.id]);
+  }, [compiledResult.artifact_url, example?.id, executionConfig, enabled]);
 
-  const step = () => controllerRef.current?.step();
+  const step = () => {
+    if (!enabled) return;
+    controllerRef.current?.step();
+    setIsPlaying(controllerRef.current?.isPlaying ?? false);
+  };
+
   const togglePlay = () => {
+    if (!enabled) return;
     const speed = Math.max(50, executionConfig?.continuous?.playback_speed ?? 250);
     if (controllerRef.current?.isPlaying) controllerRef.current.pause();
     else controllerRef.current?.play(speed);
@@ -96,7 +109,7 @@ export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(funct
     togglePlay,
     isPlaying,
     step,
-  }), [isPlaying]);
+  }), [isPlaying, enabled]);
 
   return (
     <div className="h-full min-h-0 p-6">
@@ -105,11 +118,24 @@ export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(funct
           <CardContent className="pt-6 h-full flex flex-col">
             <div className="flex items-center justify-between mb-4 shrink-0">
               <div className="text-sm text-muted-foreground">
-                {isPlaying ? 'Playing' : 'Paused'}
+                {enabled ? (isPlaying ? 'Playing' : 'Paused') : 'Visualization disabled'}
               </div>
             </div>
 
-            {error ? (
+            {!enabled ? (
+              <div className="flex-1 min-h-0 grid place-items-center text-muted-foreground text-center px-8">
+                <div>
+                  <p className="text-sm">
+                    Visualization not enabled for this schema. Add a non-JSON visualization via
+                    <code className="mx-1 px-1 py-0.5 bg-muted rounded">visualization_config</code>
+                    or per-example <code className="px-1 py-0.5 bg-muted rounded">visualizations</code>.
+                  </p>
+                  <p className="text-xs mt-3">
+                    Example: <code className="px-1 py-0.5 bg-muted rounded">{"{ outputs: { next_state: { type: 'grid' } } }"}</code>
+                  </p>
+                </div>
+              </div>
+            ) : error ? (
               <div className="text-destructive font-mono text-sm">{error}</div>
             ) : outputs ? (
               <div className="flex-1 min-h-0">

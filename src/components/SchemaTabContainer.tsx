@@ -2,8 +2,11 @@ import { useState, forwardRef, useImperativeHandle, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SchemaEditor, type SchemaEditorRef } from '@/components/SchemaEditor';
 import { ConfigEditor } from '@/components/ConfigEditor';
-import type { CompileResponse } from '@/api/compile';
 import type { ExecutionConfig, VisualizationConfig } from '@/types';
+import { compileSchema, type CompileResponse } from '@/api/compile';
+
+// Replace the useImperativeHandle block with:
+
 
 interface SchemaTabContainerProps {
   schemaSource: string;
@@ -45,9 +48,20 @@ export const SchemaTabContainer = forwardRef<SchemaTabContainerRef, SchemaTabCon
 
     useImperativeHandle(ref, () => ({
       compile: async () => {
-        await schemaEditorRef.current?.compile();
+        if (schemaEditorRef.current) return schemaEditorRef.current.compile();
+        // editor unmounted (e.g., on Config subtab): compile current source directly
+        onCompileStart?.();
+        try {
+          const result: CompileResponse = await compileSchema(schemaSource);
+          onCompileSuccess(result);
+        } catch (e) {
+          onCompileError(e instanceof Error ? e.message : 'Compilation failed');
+        } finally {
+          onCompileEnd?.();
+        }
       },
     }));
+
 
     return (
       <Tabs value={schemaSubTab} onValueChange={setSchemaSubTab} className="h-full flex flex-col">
@@ -57,7 +71,7 @@ export const SchemaTabContainer = forwardRef<SchemaTabContainerRef, SchemaTabCon
         </TabsList>
 
         <div className="flex-1 min-h-0">
-          <TabsContent value="schema" className="m-0 h-full">
+          <TabsContent value="schema" className="m-0 h-full" forceMount>
             <SchemaEditor
               ref={schemaEditorRef}
               value={schemaSource}
@@ -69,6 +83,7 @@ export const SchemaTabContainer = forwardRef<SchemaTabContainerRef, SchemaTabCon
               onCompileEnd={onCompileEnd}
             />
           </TabsContent>
+
 
           <TabsContent value="config" className="m-0 h-full">
             <ConfigEditor

@@ -1,5 +1,5 @@
-// src/App.tsx
-import { useState, useRef } from 'react';
+// COPY-AND-REPLACE: ./src/App.tsx
+import { useState, useRef, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SchemaTabContainer, type SchemaTabContainerRef } from '@/components/SchemaTabContainer';
 import { CompiledCodeView } from '@/components/CompiledCodeView';
@@ -14,7 +14,22 @@ import { VisualizeTab, type VisualizeTabRef } from '@/components/VisualizeTab';
 import { useExampleState } from '@/hooks/useExampleState';
 import type { CompileResponse } from '@/api/compile';
 import { examples, getDefaultExample } from '@/examples';
-import type { Example } from '@/types';
+import type { Example, VisualizationType } from '@/types';
+
+function hasVisualization(
+  compiled: CompileResponse | null,
+  example: Example,
+  visCfg: ReturnType<typeof useExampleState>['visualizationConfig'],
+): boolean {
+  if (!compiled) return false;
+  const outputs = Object.keys(compiled.output_schema || {});
+  for (const name of outputs) {
+    const t1 = visCfg?.outputs?.[name]?.type as VisualizationType | undefined;
+    const t2 = example?.visualizations?.[name] as VisualizationType | undefined;
+    if ((t1 && t1 !== 'json') || (t2 && t2 !== 'json')) return true;
+  }
+  return false;
+}
 
 export function App() {
   const schemaTabContainerRef = useRef<SchemaTabContainerRef>(null);
@@ -38,6 +53,11 @@ export function App() {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [isCompiling, setIsCompiling] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
+
+  const canVisualize = useMemo(
+    () => hasVisualization(compiledResult, currentExample, visualizationConfig),
+    [compiledResult, currentExample, visualizationConfig]
+  );
 
   const handleCompileSuccess = (result: CompileResponse) => {
     setCompiledResult(result);
@@ -72,8 +92,9 @@ export function App() {
         blur();
         schemaTabContainerRef.current?.compile();
       } else if (activeTab === 'compiled') {
+        // Only shortcut to Visualize from codegen if there is an actual viz configured.
         blur();
-        go('visualize');     // was 'execute'
+        go(canVisualize ? 'visualize' : 'execute');
       } else if (activeTab === 'visualize') {
         visualizeTabRef.current?.togglePlay();
       } else {
@@ -90,14 +111,14 @@ export function App() {
         schemaTabContainerRef.current?.compile();
       } else if (activeTab === 'compiled') {
         blur();
-        go('visualize');     // was 'execute'
+        go(canVisualize ? 'visualize' : 'execute');
       } else if (activeTab === 'visualize') {
         visualizeTabRef.current?.togglePlay();
       } else {
         executeTabRef.current?.execute();
       }
     },
-  }, [compiledResult, activeTab]);
+  }, [compiledResult, activeTab, canVisualize]);
 
   return (
     <div className="h-screen flex flex-col bg-background pb-bottom-bar overflow-hidden">
@@ -123,6 +144,7 @@ export function App() {
                 <TabsTrigger value="schema" className="gap-3">Schema<kbd className="hidden sm:inline-block ml-auto px-1.5 py-0.5 text-xs font-mono bg-muted rounded">⌘1</kbd></TabsTrigger>
                 <TabsTrigger value="compiled" disabled={!compiledResult} className="gap-3">Compiled Code<kbd className="hidden sm:inline-block ml-auto px-1.5 py-0.5 text-xs font-mono bg-muted rounded">⌘2</kbd></TabsTrigger>
                 <TabsTrigger value="execute" disabled={!compiledResult} className="gap-3">Execute<kbd className="hidden sm:inline-block ml-auto px-1.5 py-0.5 text-xs font-mono bg-muted rounded">⌘3</kbd></TabsTrigger>
+                {/* Keep tab accessible even if no viz configured; content will explain. */}
                 <TabsTrigger value="visualize" disabled={!compiledResult} className="gap-3">Visualize<kbd className="hidden sm:inline-block ml-auto px-1.5 py-0.5 text-xs font-mono bg-muted rounded">⌘4</kbd></TabsTrigger>
               </TabsList>
             </div>
@@ -174,6 +196,7 @@ export function App() {
                     example={currentExample}
                     visualizationConfig={visualizationConfig}
                     executionConfig={executionConfig}
+                    enabled={canVisualize}
                   />
                 )}
               </TabsContent>
@@ -195,8 +218,8 @@ export function App() {
 
       {activeTab === 'compiled' && compiledResult && (
         <StickyActionBar
-          action="visualize"
-          onAction={() => setActiveTab('visualize')}
+          action={canVisualize ? 'visualize' : 'execute'}
+          onAction={() => setActiveTab(canVisualize ? 'visualize' : 'execute')}
         />
       )}
 

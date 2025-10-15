@@ -45,13 +45,14 @@ describe('App', () => {
   test('switches to Compiled Code tab after successful compile', async () => {
     const mockResult = {
       artifact_url: 'https://example.com/artifact.js',
-      js_src: 'function _sum() {}',
-      ruby_src: 'def sum; end',
-      lir: 'sum: () -> int',
+      js_src: 'function _next_state() {}',
+      ruby_src: 'def next_state; end',
+      lir: 'next_state: () -> int',
       schema_hash: 'abc123',
       input_form_schema: {},
-      output_schema: {},
+      output_schema: { next_state: {} }, // <- ensure Visualize tab enabled for default example
     };
+
     vi.mocked(compileSchema).mockResolvedValue(mockResult);
 
     render(<App />);
@@ -68,13 +69,14 @@ describe('App', () => {
   test('shows Run action bar when on Compiled Code tab', async () => {
     const mockResult = {
       artifact_url: 'https://example.com/artifact.js',
-      js_src: 'function _sum() {}',
-      ruby_src: 'def sum; end',
-      lir: 'sum: () -> int',
+      js_src: 'function _next_state() {}',
+      ruby_src: 'def next_state; end',
+      lir: 'next_state: () -> int',
       schema_hash: 'abc123',
       input_form_schema: {},
-      output_schema: {},
+      output_schema: { next_state: {} }, // <- ensure Visualize tab enabled for default example
     };
+
     vi.mocked(compileSchema).mockResolvedValue(mockResult);
 
     render(<App />);
