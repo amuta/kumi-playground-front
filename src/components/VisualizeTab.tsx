@@ -1,8 +1,10 @@
-import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { OutputView } from '@/components/OutputView';
-import { loadArtifactModule, runAllOutputs } from '@/execution/artifact-runner';
-import { applyFeedbackMappings } from '@/execution/feedback-loop';
+import { VisualizationController } from '@/visualization/controller';
+import { VisualizationEngine } from '@/visualization/engine';
+import { windowScheduler } from '@/visualization/scheduler';
+import { loadArtifactModule } from '@/execution/artifact-runner';
 import type { CompileResponse } from '@/api/compile';
 import type { Example, VisualizationConfig, ExecutionConfig } from '@/types';
 
@@ -16,83 +18,79 @@ interface VisualizeTabProps {
 export interface VisualizeTabRef {
   togglePlay: () => void;
   isPlaying: boolean;
-  step: () => Promise<void>;
+  step: () => void;
 }
 
 export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(function VisualizeTab(
   { compiledResult, example, visualizationConfig, executionConfig },
   ref
 ) {
+  const controllerRef = useRef<VisualizationController | null>(null);
   const [outputs, setOutputs] = useState<Record<string, any> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const modRef = useRef<any | null>(null);
-  const inputRef = useRef<Record<string, any>>({});
-  const playingRef = useRef(false);
-  const errorRef = useRef<string | null>(null);
-  const timerIdRef = useRef<number | null>(null);
+  // build controller once
+  if (controllerRef.current == null) {
+    controllerRef.current = new VisualizationController(windowScheduler);
+    controllerRef.current.onUpdate = (snap) => setOutputs(snap.outputs);
+    controllerRef.current.onError = (msg) => setError(msg);
+  }
 
-  useEffect(() => { playingRef.current = isPlaying; }, [isPlaying]);
-  useEffect(() => { errorRef.current = error; }, [error]);
-
+  // init engine when artifact_url or example changes
   useEffect(() => {
-    if (example?.base_input) inputRef.current = example.base_input;
-    setOutputs(null);
-    setError(null);
-    stopPlay();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [example?.id]);
-
-  useEffect(() => {
-    stopPlay();
-    modRef.current = null;
     const url = compiledResult.artifact_url;
-    if (url) {
-      loadArtifactModule(url).then(m => { modRef.current = m; }).catch(e => setError(String(e)));
-    } else {
+    if (!url) {
       setError('No executable artifact available. Recompile to get artifact_url.');
+      return;
     }
-    return () => stopPlay();
-  }, [compiledResult.artifact_url]);
+    if (!compiledResult.output_schema) {
+      setError('Missing output_schema from compile result.');
+      return;
+    }
 
-  const step = async () => {
-    const mod = modRef.current;
-    if (!mod) { setError('Artifact not loaded yet'); return; }
-    try {
-      const result = runAllOutputs(mod, inputRef.current, compiledResult.output_schema);
-      setOutputs(result);
-      setError(null);
-      if (executionConfig?.type === 'continuous' && executionConfig.continuous?.feedback_mappings?.length) {
-        inputRef.current = applyFeedbackMappings(executionConfig, result, inputRef.current);
+    let mounted = true;
+
+    (async () => {
+      try {
+        const mod = await loadArtifactModule(url);
+        if (!mounted) return;
+
+        const engine = new VisualizationEngine({
+          mod,
+          outputSchema: compiledResult.output_schema,
+          execConfig: executionConfig,
+          initialInput: example?.base_input,
+        });
+
+        await controllerRef.current!.init({
+          engine,
+          baseInput: example?.base_input,
+        });
+
+        setOutputs(null);
+        setError(null);
+        setIsPlaying(false);
+      } catch (e) {
+        if (!mounted) return;
+        setError(e instanceof Error ? e.message : 'Failed to load artifact');
       }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Execution failed');
-    }
-  };
+    })();
 
-  const loopOnce = async () => {
-    if (!playingRef.current) return;
-    await step();
-    if (!playingRef.current || errorRef.current) { stopPlay(); return; }
-    const delay = Math.max(50, executionConfig?.continuous?.playback_speed ?? 250);
-    timerIdRef.current = window.setTimeout(loopOnce, delay) as unknown as number;
-  };
+    return () => {
+      mounted = false;
+      controllerRef.current?.pause();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [compiledResult.artifact_url, example?.id]);
 
-  const startPlay = () => {
-    if (playingRef.current) return;
-    setIsPlaying(true);
-    playingRef.current = true;
-    loopOnce();
+  const step = () => controllerRef.current?.step();
+  const togglePlay = () => {
+    const speed = Math.max(50, executionConfig?.continuous?.playback_speed ?? 250);
+    if (controllerRef.current?.isPlaying) controllerRef.current.pause();
+    else controllerRef.current?.play(speed);
+    setIsPlaying(controllerRef.current?.isPlaying ?? false);
   };
-
-  const stopPlay = () => {
-    playingRef.current = false;
-    setIsPlaying(false);
-    if (timerIdRef.current) { clearTimeout(timerIdRef.current); timerIdRef.current = null; }
-  };
-
-  const togglePlay = () => (playingRef.current ? stopPlay() : startPlay());
 
   useImperativeHandle(ref, () => ({
     togglePlay,
@@ -106,8 +104,9 @@ export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(funct
         <Card className="shadow-lg border-2 h-full max-w-4xl mx-auto">
           <CardContent className="pt-6 h-full flex flex-col">
             <div className="flex items-center justify-between mb-4 shrink-0">
-              <div className="text-sm text-muted-foreground">Game of Life</div>
-              {/* No in-pane buttons; controlled by StickyActionBar */}
+              <div className="text-sm text-muted-foreground">
+                {isPlaying ? 'Playing' : 'Paused'}
+              </div>
             </div>
 
             {error ? (
