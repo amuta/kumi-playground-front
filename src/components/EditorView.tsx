@@ -21,37 +21,22 @@ export function EditorView({
   options = {},
 }: EditorViewProps) {
   const handleMount: OnMount = (editor, monaco) => {
-    editor.addCommand(
-      monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
-      () => {},
-      '!suggestWidgetVisible && !renameInputVisible && !inSnippetMode && !quickFixWidgetVisible'
-    );
+    const keybindingsService = (editor as any)._standaloneKeybindingService;
 
-    editor.addCommand(
-      monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
-      () => {},
-      '!suggestWidgetVisible && !renameInputVisible && !inSnippetMode && !quickFixWidgetVisible'
-    );
+    if (keybindingsService) {
+      const bindings = [
+        monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
+        monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
+        monaco.KeyMod.CtrlCmd | monaco.KeyCode.Digit1,
+        monaco.KeyMod.CtrlCmd | monaco.KeyCode.Digit2,
+        monaco.KeyMod.CtrlCmd | monaco.KeyCode.Digit3,
+        monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK,
+      ];
 
-    editor.addCommand(
-      monaco.KeyMod.CtrlCmd | monaco.KeyCode.Digit1,
-      () => {}
-    );
-
-    editor.addCommand(
-      monaco.KeyMod.CtrlCmd | monaco.KeyCode.Digit2,
-      () => {}
-    );
-
-    editor.addCommand(
-      monaco.KeyMod.CtrlCmd | monaco.KeyCode.Digit3,
-      () => {}
-    );
-
-    editor.addCommand(
-      monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK,
-      () => {}
-    );
+      bindings.forEach(keybinding => {
+        keybindingsService.addDynamicKeybinding(`-${keybinding}`, keybinding, () => {});
+      });
+    }
 
     onMount?.(editor, monaco);
   };

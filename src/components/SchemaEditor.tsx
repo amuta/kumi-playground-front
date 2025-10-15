@@ -54,20 +54,6 @@ export const SchemaEditor = forwardRef<SchemaEditorRef, SchemaEditorProps>(({
   const handleEditorDidMount = (editor: MonacoEditor.IStandaloneCodeEditor, monaco: Monaco) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
-
-    editor.addCommand(
-      monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
-      () => {
-        handleCompile();
-      }
-    );
-
-    editor.addCommand(
-      monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
-      () => {
-        handleCompile();
-      }
-    );
   };
 
   useImperativeHandle(ref, () => ({
