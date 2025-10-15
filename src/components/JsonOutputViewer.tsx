@@ -1,5 +1,5 @@
 // components/JsonOutputViewer.tsx
-import Editor from '@monaco-editor/react';
+import { EditorView } from '@/components/EditorView';
 
 interface JsonOutputViewerProps {
   value: any;
@@ -27,20 +27,14 @@ export function JsonOutputViewer({ value, height = '100%' }: JsonOutputViewerPro
   const jsonString = safeJsonStringify(value);
 
   return (
-    <Editor
-      width="100%"
+    <EditorView
       height={height}
       language="json"
-      theme="vs-dark"
       value={jsonString}
+      readOnly
       options={{
-        readOnly: true,
-        minimap: { enabled: false },
-        fontSize: 14,
         tabSize: 2,
-        scrollBeyondLastLine: false,
         scrollbar: { vertical: 'hidden', horizontal: 'auto', alwaysConsumeMouseWheel: false },
-        automaticLayout: true,
       }}
     />
   );

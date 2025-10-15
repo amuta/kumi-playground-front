@@ -1,6 +1,6 @@
-import Editor from '@monaco-editor/react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
+import { EditorView } from '@/components/EditorView';
 import type { CompileResponse } from '@/api/compile';
 
 interface CompiledCodeViewProps {
@@ -20,18 +20,11 @@ export function CompiledCodeView({ result }: CompiledCodeViewProps) {
         <TabsContent value="js" className="mt-4">
           <Card className="overflow-hidden">
             <div className="h-[600px]">
-              <Editor
+              <EditorView
                 height="100%"
                 language="javascript"
                 value={result.js_src}
-                theme="vs-dark"
-                options={{
-                  readOnly: true,
-                  minimap: { enabled: false },
-                  fontSize: 14,
-                  scrollBeyondLastLine: false,
-                  automaticLayout: true,
-                }}
+                readOnly
               />
             </div>
           </Card>
@@ -40,18 +33,11 @@ export function CompiledCodeView({ result }: CompiledCodeViewProps) {
         <TabsContent value="ruby" className="mt-4">
           <Card className="overflow-hidden">
             <div className="h-[600px]">
-              <Editor
+              <EditorView
                 height="100%"
                 language="ruby"
                 value={result.ruby_src}
-                theme="vs-dark"
-                options={{
-                  readOnly: true,
-                  minimap: { enabled: false },
-                  fontSize: 14,
-                  scrollBeyondLastLine: false,
-                  automaticLayout: true,
-                }}
+                readOnly
               />
             </div>
           </Card>
@@ -60,18 +46,11 @@ export function CompiledCodeView({ result }: CompiledCodeViewProps) {
         <TabsContent value="lir" className="mt-4">
           <Card className="overflow-hidden">
             <div className="h-[600px]">
-              <Editor
+              <EditorView
                 height="100%"
                 language="plaintext"
                 value={result.lir}
-                theme="vs-dark"
-                options={{
-                  readOnly: true,
-                  minimap: { enabled: false },
-                  fontSize: 14,
-                  scrollBeyondLastLine: false,
-                  automaticLayout: true,
-                }}
+                readOnly
               />
             </div>
           </Card>

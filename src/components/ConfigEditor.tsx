@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import Editor from '@monaco-editor/react';
 import { Card } from '@/components/ui/card';
+import { EditorView } from '@/components/EditorView';
 import type { ExecutionConfig, VisualizationConfig } from '@/types';
 
 interface ConfigEditorProps {
@@ -62,20 +62,11 @@ export function ConfigEditor({
     <div className="flex flex-col h-full">
       <Card className="overflow-hidden shadow-lg border-2 flex-1 min-h-[300px]">
         <div className="h-full">
-          <Editor
+          <EditorView
             height="100%"
-            defaultLanguage="json"
+            language="json"
             value={jsonValue}
             onChange={handleChange}
-            theme="vs-dark"
-            options={{
-              minimap: { enabled: false },
-              fontSize: 14,
-              lineNumbers: 'on',
-              scrollBeyondLastLine: false,
-              automaticLayout: true,
-              padding: { top: 16, bottom: 16 },
-            }}
           />
         </div>
       </Card>

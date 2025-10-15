@@ -1,7 +1,8 @@
 
 import { useImperativeHandle, forwardRef, useRef } from 'react';
-import Editor, { type Monaco } from '@monaco-editor/react';
+import { type Monaco } from '@monaco-editor/react';
 import { Card } from '@/components/ui/card';
+import { EditorView } from '@/components/EditorView';
 import { compileSchema, type CompileResponse } from '@/api/compile';
 import type { editor as MonacoEditor } from 'monaco-editor';
 
@@ -77,21 +78,12 @@ export const SchemaEditor = forwardRef<SchemaEditorRef, SchemaEditorProps>(({
     <div className="flex flex-col h-full">
       <Card className="overflow-hidden shadow-lg border-2 flex-1 min-h-[300px]">
         <div className="h-full">
-          <Editor
+          <EditorView
             height="100%"
-            defaultLanguage="ruby"
+            language="ruby"
             value={value}
             onChange={handleEditorChange}
-            theme="vs-dark"
             onMount={handleEditorDidMount}
-            options={{
-              minimap: { enabled: false },
-              fontSize: 14,
-              lineNumbers: 'on',
-              scrollBeyondLastLine: false,
-              automaticLayout: true,
-              padding: { top: 16, bottom: 16 },
-            }}
           />
         </div>
       </Card>

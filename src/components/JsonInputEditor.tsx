@@ -1,5 +1,5 @@
-import Editor from '@monaco-editor/react';
 import { useState, useEffect } from 'react';
+import { EditorView } from '@/components/EditorView';
 
 interface JsonInputEditorProps {
   value: Record<string, any>;
@@ -33,15 +33,12 @@ export function JsonInputEditor({
   };
 
   return (
-    <Editor
+    <EditorView
       height={height}
       language="json"
-      theme="vs-dark"
       value={editorValue}
       onChange={handleChange}
       options={{
-        minimap: { enabled: false },
-        fontSize: 14,
         tabSize: 2,
         formatOnPaste: true,
       }}
