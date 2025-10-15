@@ -1,4 +1,4 @@
-import Editor, { type Monaco, type OnMount } from '@monaco-editor/react';
+import Editor, { type OnMount } from '@monaco-editor/react';
 import type { editor as MonacoEditor } from 'monaco-editor';
 
 interface EditorViewProps {
@@ -11,18 +11,9 @@ interface EditorViewProps {
   options?: MonacoEditor.IStandaloneEditorConstructionOptions;
 }
 
-export function EditorView({
-  value,
-  language,
-  onChange,
-  onMount,
-  readOnly = false,
-  height = '100%',
-  options = {},
-}: EditorViewProps) {
+export function EditorView({ value, language, onChange, onMount, readOnly = false, height = '100%', options = {} }: EditorViewProps) {
   const handleMount: OnMount = (editor, monaco) => {
     const keybindingsService = (editor as any)._standaloneKeybindingService;
-
     if (keybindingsService) {
       const bindings = [
         monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
@@ -32,12 +23,8 @@ export function EditorView({
         monaco.KeyMod.CtrlCmd | monaco.KeyCode.Digit3,
         monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK,
       ];
-
-      bindings.forEach(keybinding => {
-        keybindingsService.addDynamicKeybinding(`-${keybinding}`, keybinding, () => {});
-      });
+      bindings.forEach(k => { keybindingsService.addDynamicKeybinding(`-${k}`, k, () => {}); });
     }
-
     onMount?.(editor, monaco);
   };
 

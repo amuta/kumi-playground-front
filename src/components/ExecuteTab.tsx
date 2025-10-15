@@ -7,6 +7,7 @@ import { runAllOutputsFromUrl } from '@/execution/artifact-runner';
 import { applyFeedbackMappings } from '@/execution/feedback-loop';
 import type { CompileResponse } from '@/api/compile';
 import type { Example, ExecutionConfig } from '@/types';
+import { makeBinaryGrid } from '@/input-gen/grid';
 
 interface ExecuteTabProps {
   compiledResult: CompileResponse;
@@ -22,6 +23,24 @@ export interface ExecuteTabRef {
   isExecuting: boolean;
 }
 
+function deriveDefaultInput(example?: Example): Record<string, any> {
+  if (!example) return {};
+  if (example.base_input) return example.base_input;
+  // Fallback for grid-based schemas without base_input (e.g., Game of Life)
+  if (example.canvas_config?.render === 'grid2d') {
+    const c = example.canvas_config.controls ?? {};
+    return {
+      rows: makeBinaryGrid(
+        c.height?.default ?? 40,
+        c.width?.default ?? 60,
+        c.density?.default ?? 0.18,
+        c.seed?.default
+      ),
+    };
+  }
+  return {};
+}
+
 export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function ExecuteTab(
   { compiledResult, example, executionConfig, onExecuteStart, onExecuteEnd, hideInput = false },
   ref
@@ -32,11 +51,12 @@ export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function Ex
   const [isExecuting, setIsExecuting] = useState(false);
   const [jsonError, setJsonError] = useState<string | null>(null);
 
+  // Reset inputs when example or compiled artifact changes
   useEffect(() => {
-    if (example?.base_input) setInputValues(example.base_input);
+    setInputValues(deriveDefaultInput(example));
     setExecutionResult(null);
     setExecutionError(null);
-  }, [example]);
+  }, [example?.id, compiledResult?.schema_hash]);
 
   const handleExecute = async () => {
     setIsExecuting(true);
@@ -120,11 +140,13 @@ export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function Ex
                     results={executionResult}
                     outputSchema={compiledResult.output_schema}
                     example={example}
+                    // visualizationConfig intentionally omitted here; Execute tab shows JSON by default unless example overrides.
                   />
                 </div>
               </CardContent>
             </Card>
           ) : (
+
             <Card className="shadow-lg border-2 border-dashed bg-muted/20 flex-1 flex flex-col min-h-0">
               <CardContent className="pt-6 flex-1 min-h-0 flex items-center justify-center">
                 <div className="text-center text-muted-foreground space-y-2">

@@ -143,7 +143,7 @@ export function App() {
             <div className="sticky top-0 z-20 bg-background">
               <TabsList className="grid w-full grid-cols-4 mb-6">
                 <TabsTrigger value="schema" className="gap-3">Schema<kbd className="hidden sm:inline-block ml-auto px-1.5 py-0.5 text-xs font-mono bg-muted rounded">⌘1</kbd></TabsTrigger>
-                <TabsTrigger value="compiled" disabled={!compiledResult} className="gap-3">Compiled Code<kbd className="hidden sm:inline-block ml-auto px-1.5 py-0.5 text-xs font-mono bg-muted rounded">⌘2</kbd></TabsTrigger>
+                <TabsTrigger value="compiled" disabled={!compiledResult} className="gap-3">Codegen<kbd className="hidden sm:inline-block ml-auto px-1.5 py-0.5 text-xs font-mono bg-muted rounded">⌘2</kbd></TabsTrigger>
                 <TabsTrigger value="execute" disabled={!compiledResult} className="gap-3">Execute<kbd className="hidden sm:inline-block ml-auto px-1.5 py-0.5 text-xs font-mono bg-muted rounded">⌘3</kbd></TabsTrigger>
                 {/* Keep tab accessible even if no viz configured; content will explain. */}
                 <TabsTrigger value="visualize" disabled={!compiledResult} className="gap-3">Visualize<kbd className="hidden sm:inline-block ml-auto px-1.5 py-0.5 text-xs font-mono bg-muted rounded">⌘4</kbd></TabsTrigger>

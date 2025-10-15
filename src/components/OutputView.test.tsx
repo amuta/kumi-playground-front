@@ -8,10 +8,10 @@ vi.mock('@monaco-editor/react', () => ({
 }));
 
 describe('OutputView with visualization registry', () => {
-  const mockOutputSchema = {
-    sum: { axes: [], kind: 'value' as const, type: 'integer' as const },
-    history: { axes: ['10'], kind: 'value' as const, type: 'integer' as const },
-    matrix: { axes: ['3', '3'], kind: 'value' as const, type: 'integer' as const },
+  const mockOutputSchema: Record<string, { type: 'integer'; axes?: string[] }> = {
+    sum: { type: 'integer' },
+    history: { type: 'integer', axes: ['10'] },
+    matrix: { type: 'integer', axes: ['3', '3'] },
   };
 
   it('defaults to JSON visualization when no config', () => {
@@ -20,7 +20,7 @@ describe('OutputView with visualization registry', () => {
     render(<OutputView results={results} outputSchema={mockOutputSchema} />);
 
     expect(screen.getByTestId('monaco')).toBeInTheDocument();
-    const json = screen.getByTestId('monaco').textContent;
+    const json = screen.getByTestId('monaco').textContent as string;
     expect(json).toContain('sum');
     expect(json).toContain('product');
   });
@@ -38,9 +38,8 @@ describe('OutputView with visualization registry', () => {
 
     render(<OutputView results={results} outputSchema={mockOutputSchema} example={example} />);
 
-    expect(screen.getText ? true : true).toBeTruthy(); // smoke
     expect(screen.getByText('history:')).toBeInTheDocument();
-    expect(screen.getByRole('group')).toBeInTheDocument();
+    expect(screen.getByRole('group')).toBeInTheDocument(); // <pre role="group">
   });
 
   it('falls back to JSON for invalid visualization type', () => {

@@ -22,7 +22,7 @@ describe('App', () => {
 
     expect(screen.getByText('Kumi Play')).toBeInTheDocument();
     expect(screen.getAllByRole('tab', { name: /Schema/i }).length).toBeGreaterThan(0);
-    expect(screen.getByRole('tab', { name: /Compiled Code/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Codegen/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Execute/i })).toBeInTheDocument();
   });
 
@@ -42,7 +42,7 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: /Compile/i })).toBeInTheDocument();
   });
 
-  test('switches to Compiled Code tab after successful compile', async () => {
+  test('switches to Codegen tab after successful compile', async () => {
     const mockResult = {
       artifact_url: 'https://example.com/artifact.js',
       js_src: 'function _next_state() {}',
@@ -61,12 +61,12 @@ describe('App', () => {
     compileButton.click();
 
     await waitFor(() => {
-      const compiledTab = screen.getByRole('tab', { name: /Compiled Code/i });
+      const compiledTab = screen.getByRole('tab', { name: /Codegen/i });
       expect(compiledTab).toHaveAttribute('data-state', 'active');
     });
   });
 
-  test('shows Run action bar when on Compiled Code tab', async () => {
+  test('shows Run action bar when on Codegen tab', async () => {
     const mockResult = {
       artifact_url: 'https://example.com/artifact.js',
       js_src: 'function _next_state() {}',

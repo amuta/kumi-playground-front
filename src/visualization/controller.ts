@@ -1,76 +1,112 @@
-import type { IScheduler } from './scheduler';
-import { VisualizationEngine, type EngineSnapshot } from './engine';
+import type { EngineSnapshot } from './engine';
+import { windowScheduler, type IScheduler } from './scheduler';
 
-type UpdateFn = (snapshot: EngineSnapshot) => void;
+type EngineLike = {
+  snapshot: () => EngineSnapshot;
+  // allow sync or async step implementations (main thread vs worker proxy)
+  step: () => EngineSnapshot | Promise<EngineSnapshot>;
+  setInput?: (v: Record<string, any>) => void;
+};
 
 export class VisualizationController {
-  private engine: VisualizationEngine | null = null;
-  private scheduler: IScheduler;
-  private timerId: number | null = null;
+  private engine: EngineLike | null = null;
   private playing = false;
   private speed = 250;
+  private timerId: number | null = null;
+  private scheduler: IScheduler;
+  private subs = new Set<() => void>();
+  private last: EngineSnapshot = { stepCount: 0, input: {}, outputs: null, error: null };
 
-  onUpdate?: UpdateFn;
+  // Back-compat callbacks used by VisualizeTab
+  onUpdate?: (snapshot: EngineSnapshot) => void;
   onError?: (message: string) => void;
 
-  constructor(scheduler: IScheduler) {
-    this.scheduler = scheduler;
+  constructor(scheduler?: IScheduler) {
+    this.scheduler = scheduler ?? windowScheduler;
   }
 
-  get isPlaying(): boolean {
-    return this.playing;
-  }
-  // replace the entire class body or just these methods if you prefer
+  get isPlaying() { return this.playing; }
+  get stepCount()  { return this.last.stepCount; }
+  get outputs()    { return this.last.outputs; }
+  get error()      { return this.last.error; }
 
-  async init(opts: { engine?: any; baseInput?: Record<string, any> }) {
-    this.engine = opts.engine;
+  onChange(cb: () => void) {
+    this.subs.add(cb);
+    return () => this.subs.delete(cb);
+  }
+  private emit() {
+    this.subs.forEach(cb => { try { cb(); } catch {} });
+    this.onUpdate?.(this.last);
+    if (this.last.error) this.onError?.(this.last.error);
+  }
+
+  async init(opts: { engine?: EngineLike; baseInput?: Record<string, any> }) {
+    this.engine = opts.engine ?? null;
     if (!this.engine) {
-      this.onError?.('Engine not initialized');
+      this.last = { stepCount: 0, input: {}, outputs: null, error: 'Engine not initialized' };
+      this.emit();
       return;
     }
-    if (opts.baseInput) this.engine.setInput(opts.baseInput);
-    const snap = this.engine.snapshot();
-    this.onUpdate?.(snap);
-    if (snap.error) this.onError?.(snap.error);
+    if (opts.baseInput && this.engine.setInput) this.engine.setInput(opts.baseInput);
+    this.last = await Promise.resolve(this.engine.snapshot());
+    this.emit();
+  }
+
+  setInput(v: Record<string, any>) {
+    if (!this.engine?.setInput) return;
+    this.engine.setInput(v);
+    // snapshot is always sync
+    this.last = this.engine.snapshot();
+    this.emit();
   }
 
   step() {
     if (!this.engine) {
-      this.onError?.('Engine not initialized');
+      this.last = { ...this.last, error: 'Engine not initialized' };
+      this.emit();
       return;
     }
-    const snap = this.engine.step();
-    this.onUpdate?.(snap);
-    if (snap.error) this.onError?.(snap.error);
+    const res = this.engine.step();
+    // handle async worker proxy
+    if (res && typeof (res as any).then === 'function') {
+      (res as Promise<EngineSnapshot>)
+        .then(snap => { this.last = snap; this.emit(); })
+        .catch(err => {
+          this.last = { ...this.last, error: err instanceof Error ? err.message : 'Step failed' };
+          this.emit();
+        });
+      return;
+    }
+    this.last = res as EngineSnapshot;
+    this.emit();
   }
 
-  private loop = (): void => {
+  private tick = () => {
     if (!this.playing) return;
     this.step();
-    if (this.playing) {
-      this.timerId = this.scheduler.set(this.speed, this.loop);
-    }
+    this.timerId = this.scheduler.set(this.speed, this.tick);
   };
 
-  play(speedMs: number): void {
+  play(speedMs: number) {
     if (this.playing) return;
     this.playing = true;
-    this.speed = speedMs;
-    this.timerId = this.scheduler.set(this.speed, this.loop);
+    this.speed = Math.max(0, speedMs | 0);
+    this.timerId = this.scheduler.set(this.speed, this.tick);
   }
 
-  pause(): void {
+  pause() {
     this.playing = false;
-    if (this.timerId != null) {
-      this.scheduler.clear(this.timerId);
-      this.timerId = null;
-    }
+    this.scheduler.clear(this.timerId);
+    this.timerId = null;
   }
 
-  destroy(): void {
+  destroy() {
     this.pause();
     this.engine = null;
+    this.subs.clear();
     this.onUpdate = undefined;
     this.onError = undefined;
   }
 }
+
+export type { IScheduler } from './scheduler';

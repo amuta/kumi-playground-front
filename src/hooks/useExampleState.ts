@@ -1,4 +1,3 @@
-// COPY-AND-REPLACE: ./src/hooks/useExampleState.ts
 import { useState, useEffect, useRef } from 'react';
 import type { Example, ExecutionConfig, VisualizationConfig, CanvasConfig } from '@/types';
 import type { CompileResponse } from '@/api/compile';

@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, test, expect, vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { SchemaTabContainer } from './SchemaTabContainer';
-import type { ExecutionConfig, VisualizationConfig } from '@/types';
+import type { ExecutionConfig, VisualizationConfig, CanvasConfig } from '@/types';
 
 vi.mock('@monaco-editor/react', () => ({
   default: () => <div>Monaco Editor</div>,
@@ -13,16 +13,28 @@ vi.mock('@/api/compile', () => ({
 }));
 
 describe('SchemaTabContainer', () => {
+  const defaultCanvasConfig: CanvasConfig = {
+    render: 'grid2d',
+    controls: {
+      width: { default: 60 },
+      height: { default: 40 },
+      density: { default: 0.18 },
+      seed: { default: 42 },
+    },
+  };
+
   const defaultProps = {
     schemaSource: 'schema do\nend',
     onSchemaSourceChange: vi.fn(),
     executionConfig: { type: 'single' } as ExecutionConfig,
     visualizationConfig: { outputs: {} } as VisualizationConfig,
+    canvasConfig: defaultCanvasConfig,
     onExecutionConfigChange: vi.fn(),
     onVisualizationConfigChange: vi.fn(),
+    onCanvasConfigChange: vi.fn(),
     onCompileSuccess: vi.fn(),
     onCompileError: vi.fn(),
-    compileError: null,
+    compileError: null as string | null,
     onCompileStart: vi.fn(),
     onCompileEnd: vi.fn(),
   };

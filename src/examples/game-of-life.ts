@@ -32,21 +32,20 @@ export const gameOfLife: Example = {
 
   value :next_state, select(next_alive, 1, 0)
 end`,
-  // remove base_input; generate via canvas_config
   visualization_config: { outputs: { next_state: { type: 'grid' } } },
   execution_config: {
     type: 'continuous',
     continuous: {
       feedback_mappings: [{ from_output: 'next_state', to_input: 'rows' }],
-      playback_speed: 120,
+      playback_speed: 120, // steps per second
     },
   },
   canvas_config: {
     render: 'grid2d',
     controls: {
-      speed: { min: 50, max: 500, default: 120 },
+      // speed removed from canvas; keep geometry/seed here
       seed: { default: 42 },
-      width: { default: 120 },   // big example
+      width: { default: 120 },
       height: { default: 80 },
       density: { default: 0.18 },
     },

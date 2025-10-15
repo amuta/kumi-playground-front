@@ -10,23 +10,15 @@ interface OutputViewProps {
   visualizationConfig?: VisualizationConfig;
 }
 
-const visualizers = {
-  json: JsonOutputViewer,
-  table: TableVisualizer,
-  grid: GridVisualizer,
-} as const;
+const visualizers = { json: JsonOutputViewer, table: TableVisualizer, grid: GridVisualizer } as const;
 
 export function OutputView({ results, example, visualizationConfig }: OutputViewProps) {
   const getVisualizationType = (outputName: string): VisualizationType => {
     const fromConfig = visualizationConfig?.outputs?.[outputName]?.type as VisualizationType | undefined;
     if (fromConfig && fromConfig in visualizers) return fromConfig;
-
     const fromExample = example?.visualizations?.[outputName] as VisualizationType | undefined;
     if (fromExample && fromExample in visualizers) return fromExample;
-
-    if (fromConfig || fromExample) {
-      console.warn(`Unknown visualization type for output "${outputName}", falling back to JSON`);
-    }
+    if (fromConfig || fromExample) console.warn(`Unknown visualization type for output "${outputName}", falling back to JSON`);
     return 'json';
   };
 
@@ -35,11 +27,8 @@ export function OutputView({ results, example, visualizationConfig }: OutputView
 
   Object.entries(results).forEach(([name, value]) => {
     const vizType = getVisualizationType(name);
-    if (vizType === 'json') {
-      jsonOutputs[name] = value;
-    } else {
-      customVisualizations.push({ name, value, vizType });
-    }
+    if (vizType === 'json') jsonOutputs[name] = value;
+    else customVisualizations.push({ name, value, vizType });
   });
 
   return (

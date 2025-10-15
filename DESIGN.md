@@ -15,7 +15,7 @@ Clean, minimal frontend for Kumi's declarative calculation DSL:
 ┌──────────────────────────────────────────────────────┐
 │ Header: "Kumi Play"                                   │
 ├──────────────────────────────────────────────────────┤
-│ [Schema] [Compiled Code] [Execute]  ← Main Tabs     │
+│ [Schema] [Codegen] [Execute]  ← Main Tabs     │
 ├──────────────────────────────────────────────────────┤
 │                                                       │
 │            Active tab content (full screen)          │
@@ -26,7 +26,7 @@ Clean, minimal frontend for Kumi's declarative calculation DSL:
 ### Three Tabs
 
 **1. Schema** - Monaco editor with Compile button
-**2. Compiled Code** - Sub-tabs for JS/Ruby/LIR (read-only)
+**2. Codegen** - Sub-tabs for JS/Ruby/LIR (read-only)
 **3. Execute** - Auto-generated form + output display
 
 ## Component Structure

@@ -25,7 +25,7 @@ const mockCompiledResult: CompileResponse = {
   lir: 'let x = 1',
   schema_hash: 'abc123',
   input_form_schema: {},
-  output_schema: { x: { kind: 'value', type: 'integer', axes: [] } },
+  output_schema: { x: { type: 'integer', axes: [] } }, // removed kind
 };
 
 describe('useExampleState', () => {

@@ -25,7 +25,7 @@ describe('compileKumiSchema', () => {
         y: { type: 'integer' }
       },
       output_schema: {
-        sum: { kind: 'value', type: 'integer', axes: [] }
+        sum: { type: 'integer', axes: [] }   // removed kind
       }
     };
 

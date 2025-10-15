@@ -6,7 +6,7 @@ vi.mock('@monaco-editor/react', () => ({
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
-import React, { createRef } from 'react';
+import { createRef } from 'react';
 import { VisualizeTab, type VisualizeTabRef } from './VisualizeTab';
 import type { CompileResponse } from '@/api/compile';
 
@@ -76,7 +76,7 @@ describe('VisualizeTab', () => {
     expect(ref.current!.isPlaying).toBe(false);
   });
 
-  it('default playback speed is 250 when not provided', async () => {
+  it('default playback speed path works when not provided', async () => {
     const ref = createRef<VisualizeTabRef>();
     render(
       <VisualizeTab
