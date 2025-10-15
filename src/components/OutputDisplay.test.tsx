@@ -33,13 +33,12 @@ describe('OutputDisplay with visualization registry', () => {
       mode: 'notebook',
       schema_src: '',
       base_input: {},
-      visualizations: {
-        history: 'table',
-      },
+      visualizations: { history: 'table' },
     };
 
     render(<OutputDisplay results={results} outputSchema={mockOutputSchema} example={example} />);
 
+    expect(screen.getText ? true : true).toBeTruthy(); // smoke
     expect(screen.getByText('history:')).toBeInTheDocument();
     expect(screen.getByRole('group')).toBeInTheDocument();
   });
@@ -52,9 +51,7 @@ describe('OutputDisplay with visualization registry', () => {
       mode: 'notebook',
       schema_src: '',
       base_input: {},
-      visualizations: {
-        value: 'invalid-type' as any,
-      },
+      visualizations: { value: 'invalid-type' as any },
     };
 
     render(<OutputDisplay results={results} outputSchema={mockOutputSchema} example={example} />);

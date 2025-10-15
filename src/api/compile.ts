@@ -2,23 +2,44 @@ import type { CompileResult } from '../types';
 
 export type CompileResponse = CompileResult;
 
-const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE) || 'http://localhost:3000';
+const API_BASE =
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE) ||
+  'http://localhost:3000';
 
 export async function compileSchema(
   schemaSrc: string
 ): Promise<CompileResponse> {
-  const response = await fetch(`${API_BASE}/api/kumi/compile`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ schema_src: schemaSrc })
-  });
+  const ctrl = new AbortController();
+  const timeout = setTimeout(() => ctrl.abort(), 15000); // 15s hard timeout
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.errors?.[0] || 'Compilation failed');
+  try {
+    const response = await fetch(`${API_BASE}/api/kumi/compile`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ schema_src: schemaSrc }),
+      signal: ctrl.signal,
+    });
+
+    if (!response.ok) {
+      const ctype = response.headers.get('content-type') || '';
+      if (ctype.includes('application/json')) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.errors?.[0] || 'Compilation failed');
+      } else {
+        const text = await response.text().catch(() => '');
+        throw new Error(text || `HTTP ${response.status}`);
+      }
+    }
+
+    return response.json();
+  } catch (err) {
+    if ((err as any)?.name === 'AbortError') {
+      throw new Error('Compilation request timed out');
+    }
+    throw err as Error;
+  } finally {
+    clearTimeout(timeout);
   }
-
-  return response.json();
 }
 
 export const compileKumiSchema = compileSchema;

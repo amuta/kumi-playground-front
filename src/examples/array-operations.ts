@@ -17,9 +17,6 @@ export const arrayOperations: Example = {
   end
 
   value :subtotals, input.items.item.price * input.items.item.quantity
-  trait :expensive_items, input.items.item.price > 100.0
-  trait :electronics, input.items.item.category == "electronics"
-
   value :discounted_price, input.items.item.price * 0.9
   value :is_valid_quantity, input.items.item.quantity > 0
 end`,

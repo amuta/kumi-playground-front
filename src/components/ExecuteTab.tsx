@@ -4,11 +4,12 @@ import { JsonInputEditor } from '@/components/JsonInputEditor';
 import { OutputDisplay } from '@/components/OutputDisplay';
 import { runAllOutputsFromUrl } from '@/execution/artifact-runner';
 import type { CompileResponse } from '@/api/compile';
-import type { Example } from '@/types';
+import type { Example, VisualizationConfig } from '@/types';
 
 interface ExecuteTabProps {
   compiledResult: CompileResponse;
   example?: Example;
+  visualizationConfig?: VisualizationConfig;
   onExecuteStart?: () => void;
   onExecuteEnd?: () => void;
 }
@@ -19,7 +20,7 @@ export interface ExecuteTabRef {
 }
 
 export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function ExecuteTab(
-  { compiledResult, example, onExecuteStart, onExecuteEnd },
+  { compiledResult, example, visualizationConfig, onExecuteStart, onExecuteEnd },
   ref
 ) {
   const [inputValues, setInputValues] = useState<Record<string, any>>({});
@@ -33,6 +34,12 @@ export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function Ex
   }, [example]);
 
   const handleExecute = async () => {
+    if (!compiledResult.artifact_url) {
+      setExecutionError('No executable artifact available. Recompile and ensure the compiler returns artifact_url.');
+      setExecutionResult(null);
+      return;
+    }
+
     setIsExecuting(true);
     setExecutionError(null);
     onExecuteStart?.();
@@ -94,6 +101,7 @@ export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function Ex
                     results={executionResult}
                     outputSchema={compiledResult.output_schema}
                     example={example}
+                    visualizationConfig={visualizationConfig}
                   />
                 </div>
               </CardContent>

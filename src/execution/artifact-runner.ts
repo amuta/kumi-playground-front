@@ -1,4 +1,4 @@
-// Artifact runner: loads compiled JS by URL and runs value outputs.
+// Artifact runner: loads compiled JS by URL and runs outputs.
 import type { OutputField } from '@/types';
 
 function toBase64(s: string){
@@ -23,7 +23,9 @@ export function executeOutput(mod: any, name: string, input: Record<string,any>)
 
 export function runAllOutputs(mod: any, input: Record<string,any>, schema: Record<string,OutputField>){
   const out: Record<string,any> = {};
-  for (const [name, f] of Object.entries(schema)) if (f.kind === 'value') out[name] = executeOutput(mod, name, input);
+  for (const name of Object.keys(schema)) {
+    out[name] = executeOutput(mod, name, input);
+  }
   return out;
 }
 

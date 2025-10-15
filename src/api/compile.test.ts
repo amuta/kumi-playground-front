@@ -6,17 +6,17 @@ describe('compileKumiSchema', () => {
   const originalFetch = global.fetch;
 
   beforeEach(() => {
-    global.fetch = vi.fn();
+    global.fetch = vi.fn() as any;
   });
 
   afterEach(() => {
-    global.fetch = originalFetch;
+    global.fetch = originalFetch as any;
   });
 
   it('successfully compiles valid schema', async () => {
     const mockResult: CompileResult = {
       artifact_url: 'http://localhost:3000/artifacts/abc123.js',
-  js_src: 'class KumiCompiledModule {}',
+      js_src: 'class KumiCompiledModule {}',
       ruby_src: 'class CompiledModule; end',
       lir: 'module { }',
       schema_hash: 'abc123',
@@ -31,6 +31,7 @@ describe('compileKumiSchema', () => {
 
     (global.fetch as any).mockResolvedValueOnce({
       ok: true,
+      headers: { get: () => 'application/json' },
       json: async () => mockResult
     });
 
@@ -40,53 +41,59 @@ describe('compileKumiSchema', () => {
     expect(result).toEqual(mockResult);
     expect(global.fetch).toHaveBeenCalledWith(
       'http://localhost:3000/api/kumi/compile',
-      {
+      expect.objectContaining({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ schema_src: schema })
-      }
+        body: JSON.stringify({ schema_src: schema }),
+        signal: expect.any(AbortSignal),
+      })
     );
   });
 
-  it('throws error on compilation failure with error message', async () => {
+  it('throws error on compilation failure with JSON error message', async () => {
     (global.fetch as any).mockResolvedValueOnce({
       ok: false,
+      headers: { get: () => 'application/json' },
       json: async () => ({ errors: ['Syntax error on line 3'] })
     });
 
-    const schema = 'invalid schema';
-
-    await expect(compileKumiSchema(schema))
+    await expect(compileKumiSchema('invalid schema'))
       .rejects.toThrow('Syntax error on line 3');
+  });
+
+  it('throws text error when non-JSON response', async () => {
+    (global.fetch as any).mockResolvedValueOnce({
+      ok: false,
+      headers: { get: () => 'text/plain' },
+      text: async () => 'Bad Request'
+    });
+
+    await expect(compileKumiSchema('invalid schema'))
+      .rejects.toThrow('Bad Request');
   });
 
   it('throws generic error when no error details provided', async () => {
     (global.fetch as any).mockResolvedValueOnce({
       ok: false,
+      headers: { get: () => 'application/json' },
       json: async () => ({})
     });
 
-    const schema = 'invalid schema';
-
-    await expect(compileKumiSchema(schema))
+    await expect(compileKumiSchema('invalid schema'))
       .rejects.toThrow('Compilation failed');
   });
 
   it('handles network errors', async () => {
-    (global.fetch as any).mockRejectedValueOnce(
-      new Error('Network error')
-    );
+    (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
 
-    const schema = 'schema do\nend';
-
-    await expect(compileKumiSchema(schema))
+    await expect(compileKumiSchema('schema do\nend'))
       .rejects.toThrow('Network error');
   });
 
   it('handles empty schema', async () => {
     const mockResult: CompileResult = {
       artifact_url: 'http://localhost:3000/artifacts/abc123.js',
-  js_src: 'class KumiCompiledModule {}',
+      js_src: 'class KumiCompiledModule {}',
       ruby_src: 'class CompiledModule; end',
       lir: 'module { }',
       schema_hash: 'def456',
@@ -96,6 +103,7 @@ describe('compileKumiSchema', () => {
 
     (global.fetch as any).mockResolvedValueOnce({
       ok: true,
+      headers: { get: () => 'application/json' },
       json: async () => mockResult
     });
 

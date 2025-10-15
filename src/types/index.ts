@@ -4,14 +4,13 @@ export type InputField =
   | { type: 'object'; fields: Record<string, InputField> };
 
 export type OutputField = {
-  kind: 'value' | 'trait';
-  type: 'string' | 'integer' | 'float' | 'boolean';
-  axes: string[];
+  // Kind removed. Outputs are not differentiated.
+  type?: 'string' | 'integer' | 'float' | 'boolean';
+  axes?: string[];
 };
 
 export type CompileResult = {
   // URL for executable JS artifact produced by the compiler.
-  // Optional to remain compatible with older mocks; recommended in new flow.
   artifact_url?: string;
 
   // Optional display artifacts for UI.

@@ -10,6 +10,7 @@ describe('executeOutput / runAllOutputs (pure helpers)', () => {
   const mockModule = {
     _total: (input: any) => input.price * input.qty,
     _doubled: (input: any) => input.x * 2,
+    _flag: (_: any) => true,
   };
 
   it('executes a single output', () => {
@@ -21,15 +22,14 @@ describe('executeOutput / runAllOutputs (pure helpers)', () => {
     expect(() => executeOutput(mockModule, 'missing', {})).toThrow(/not found/);
   });
 
-  it('executes all "value" outputs and ignores traits', () => {
+  it('executes value and trait outputs', () => {
     const outputSchema = {
-      total: { kind: 'value' as const, type: 'float' as const, axes: [] },
+      total:   { kind: 'value' as const, type: 'float' as const,   axes: [] },
       doubled: { kind: 'value' as const, type: 'integer' as const, axes: [] },
-      flag: { kind: 'trait' as const, type: 'boolean' as const, axes: [] },
+      flag:    { kind: 'trait' as const, type: 'boolean' as const, axes: [] },
     };
     const results = runAllOutputs(mockModule, { price: 2, qty: 5, x: 7 }, outputSchema);
-    expect(results).toEqual({ total: 10, doubled: 14 });
-    expect(results.flag).toBeUndefined();
+    expect(results).toEqual({ total: 10, doubled: 14, flag: true });
   });
 });
 
@@ -44,14 +44,12 @@ describe('URL-based evaluation', () => {
     (global.fetch as any) = originalFetch;
   });
 
-  it('loads module from artifact URL and executes outputs', async () => {
+  it('loads module from artifact URL and executes outputs (including traits)', async () => {
     const js = `
       export function _sum(i){ return i.a + i.b; }
       export function _trait_example(){ return true; }
     `;
-
-    (global.fetch as any)
-      .mockResolvedValueOnce({ ok: true, text: async () => js });
+    (global.fetch as any).mockResolvedValueOnce({ ok: true, text: async () => js });
 
     const schema = {
       sum: { kind: 'value' as const, type: 'integer' as const, axes: [] },
@@ -59,7 +57,7 @@ describe('URL-based evaluation', () => {
     };
 
     const outputs = await runAllOutputsFromUrl('http://x/artifacts/abc.js', { a: 3, b: 4 }, schema);
-    expect(outputs).toEqual({ sum: 7 });
+    expect(outputs).toEqual({ sum: 7, trait_example: true });
   });
 
   it('propagates HTTP errors', async () => {

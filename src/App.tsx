@@ -50,53 +50,35 @@ export function App() {
   };
 
   useKeyboard({
-    'meta+1': () => {
-      (document.activeElement as HTMLElement)?.blur();
-      setActiveTab('schema');
-    },
-    'meta+2': () => {
-      if (compiledResult) {
-        (document.activeElement as HTMLElement)?.blur();
-        setActiveTab('compiled');
-      }
-    },
-    'meta+3': () => {
-      if (compiledResult) {
-        (document.activeElement as HTMLElement)?.blur();
-        setActiveTab('execute');
-      }
-    },
-    'ctrl+1': () => {
-      (document.activeElement as HTMLElement)?.blur();
-      setActiveTab('schema');
-    },
-    'ctrl+2': () => {
-      if (compiledResult) {
-        (document.activeElement as HTMLElement)?.blur();
-        setActiveTab('compiled');
-      }
-    },
-    'ctrl+3': () => {
-      if (compiledResult) {
-        (document.activeElement as HTMLElement)?.blur();
-        setActiveTab('execute');
-      }
-    },
-    'meta+s': () => schemaTabContainerRef.current?.compile(),
-    'ctrl+s': () => schemaTabContainerRef.current?.compile(),
     'meta+enter': () => {
-      if (activeTab === 'schema') schemaTabContainerRef.current?.compile();
-      else if (activeTab === 'compiled') setActiveTab('execute');
-      else executeTabRef.current?.execute();
+      const blur = () => (document.activeElement as HTMLElement)?.blur();
+      const go = (tab: 'schema' | 'compiled' | 'execute') => requestAnimationFrame(() => setActiveTab(tab));
+
+      if (activeTab === 'schema') {
+        blur();
+        schemaTabContainerRef.current?.compile();
+      } else if (activeTab === 'compiled') {
+        blur();
+        go('execute');
+      } else {
+        executeTabRef.current?.execute();
+      }
     },
     'ctrl+enter': () => {
-      if (activeTab === 'schema') schemaTabContainerRef.current?.compile();
-      else if (activeTab === 'compiled') setActiveTab('execute');
-      else executeTabRef.current?.execute();
+      const blur = () => (document.activeElement as HTMLElement)?.blur();
+      const go = (tab: 'schema' | 'compiled' | 'execute') => requestAnimationFrame(() => setActiveTab(tab));
+
+      if (activeTab === 'schema') {
+        blur();
+        schemaTabContainerRef.current?.compile();
+      } else if (activeTab === 'compiled') {
+        blur();
+        go('execute');
+      } else {
+        executeTabRef.current?.execute();
+      }
     },
-    'meta+k': () => setShowShortcuts(p=>!p),
-    'ctrl+k': () => setShowShortcuts(p=>!p),
-    '?': () => setShowShortcuts(p=>!p),
+
   }, [compiledResult, activeTab]);
 
   return (
@@ -110,7 +92,7 @@ export function App() {
               <span className="hidden sm:inline">Shortcuts</span>
               <kbd className="hidden md:inline-block px-1.5 py-0.5 text-xs font-mono bg-muted rounded">?</kbd>
             </Button>
-            <ExampleSelector examples={examples} currentExample={currentExample} onExampleChange={handleExampleChange}/>
+            <ExampleSelector examples={examples} currentExample={currentExample} onExampleChange={handleExampleChange} />
           </div>
         </div>
       </header>
@@ -154,6 +136,7 @@ export function App() {
                     ref={executeTabRef}
                     compiledResult={compiledResult}
                     example={currentExample}
+                    visualizationConfig={visualizationConfig}
                     onExecuteStart={() => setIsExecuting(true)}
                     onExecuteEnd={() => setIsExecuting(false)}
                   />
@@ -165,9 +148,9 @@ export function App() {
       </main>
 
       <KeyboardShortcutsHelp isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
-      {activeTab === 'schema' && (<StickyActionBar action="compile" onAction={() => schemaTabContainerRef.current?.compile()} disabled={isCompiling} isLoading={isCompiling}/>)}
+      {activeTab === 'schema' && (<StickyActionBar action="compile" onAction={() => schemaTabContainerRef.current?.compile()} disabled={isCompiling} isLoading={isCompiling} />)}
       {activeTab === 'compiled' && compiledResult && (<StickyActionBar action="run" onAction={() => setActiveTab('execute')} />)}
-      {activeTab === 'execute' && compiledResult && (<StickyActionBar action="execute" onAction={() => executeTabRef.current?.execute()} disabled={isExecuting} isLoading={isExecuting}/>)}
+      {activeTab === 'execute' && compiledResult && (<StickyActionBar action="execute" onAction={() => executeTabRef.current?.execute()} disabled={isExecuting} isLoading={isExecuting} />)}
       {!(activeTab === 'schema' || (activeTab === 'compiled' && compiledResult) || (activeTab === 'execute' && compiledResult)) && (
         <div className="fixed inset-x-0 bottom-0 h-[var(--bottom-bar-h)] border-t bg-background/80 backdrop-blur z-40" />
       )}

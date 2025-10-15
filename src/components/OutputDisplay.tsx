@@ -1,4 +1,4 @@
-import type { OutputField, Example, VisualizationType } from '@/types';
+import type { OutputField, Example, VisualizationType, VisualizationConfig } from '@/types';
 import { JsonOutputViewer } from './JsonOutputViewer';
 import { TableVisualizer } from './visualizers/TableVisualizer';
 import { GridVisualizer } from './visualizers/GridVisualizer';
@@ -7,6 +7,7 @@ interface OutputDisplayProps {
   results: Record<string, any>;
   outputSchema: Record<string, OutputField>;
   example?: Example;
+  visualizationConfig?: VisualizationConfig;
 }
 
 const visualizers = {
@@ -15,18 +16,17 @@ const visualizers = {
   grid: GridVisualizer,
 } as const;
 
-export function OutputDisplay({ results, example }: OutputDisplayProps) {
+export function OutputDisplay({ results, example, visualizationConfig }: OutputDisplayProps) {
   const getVisualizationType = (outputName: string): VisualizationType => {
-    const configuredType = example?.visualizations?.[outputName];
+    const fromConfig = visualizationConfig?.outputs?.[outputName]?.type as VisualizationType | undefined;
+    if (fromConfig && fromConfig in visualizers) return fromConfig;
 
-    if (configuredType && configuredType in visualizers) {
-      return configuredType;
+    const fromExample = example?.visualizations?.[outputName] as VisualizationType | undefined;
+    if (fromExample && fromExample in visualizers) return fromExample;
+
+    if (fromConfig || fromExample) {
+      console.warn(`Unknown visualization type for output "${outputName}", falling back to JSON`);
     }
-
-    if (configuredType) {
-      console.warn(`Unknown visualization type "${configuredType}" for output "${outputName}", falling back to JSON`);
-    }
-
     return 'json';
   };
 
@@ -49,10 +49,10 @@ export function OutputDisplay({ results, example }: OutputDisplayProps) {
           <JsonOutputViewer value={jsonOutputs} height="100%" />
         </div>
       )}
-       {customVisualizations.map(({ name, value, vizType }) => {
-         const Visualizer = visualizers[vizType];
-         return <Visualizer key={name} name={name} value={value} />;
-       })}
-     </div>
-   );
+      {customVisualizations.map(({ name, value, vizType }) => {
+        const Visualizer = visualizers[vizType];
+        return <Visualizer key={name} name={name} value={value} />;
+      })}
+    </div>
+  );
 }

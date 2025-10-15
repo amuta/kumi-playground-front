@@ -15,12 +15,7 @@ interface KeyboardShortcutsHelpProps {
 
 const shortcuts: Shortcut[] = [
   { keys: ['⌘', 'Enter'], description: 'Compile (in Schema) / Execute (in Execute)', category: 'Primary Actions' },
-  { keys: ['⌘', 'S'], description: 'Compile schema', category: 'Primary Actions' },
-  { keys: ['⌘', '1'], description: 'Go to Schema tab', category: 'Navigation' },
-  { keys: ['⌘', '2'], description: 'Go to Compiled Code tab', category: 'Navigation' },
-  { keys: ['⌘', '3'], description: 'Go to Execute tab', category: 'Navigation' },
   { keys: ['⌘', 'K'], description: 'Toggle this help', category: 'Help' },
-  { keys: ['?'], description: 'Toggle this help', category: 'Help' },
   { keys: ['Esc'], description: 'Close this help', category: 'Help' },
 ];
 
