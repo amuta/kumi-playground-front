@@ -58,8 +58,16 @@ export function App() {
     'ctrl+3': () => compiledResult && setActiveTab('execute'),
     'meta+s': () => schemaTabContainerRef.current?.compile(),
     'ctrl+s': () => schemaTabContainerRef.current?.compile(),
-    'meta+enter': () => (activeTab === 'schema' ? schemaTabContainerRef.current?.compile() : executeTabRef.current?.execute()),
-    'ctrl+enter': () => (activeTab === 'schema' ? schemaTabContainerRef.current?.compile() : executeTabRef.current?.execute()),
+    'meta+enter': () => {
+      if (activeTab === 'schema') schemaTabContainerRef.current?.compile();
+      else if (activeTab === 'compiled') setActiveTab('execute');
+      else executeTabRef.current?.execute();
+    },
+    'ctrl+enter': () => {
+      if (activeTab === 'schema') schemaTabContainerRef.current?.compile();
+      else if (activeTab === 'compiled') setActiveTab('execute');
+      else executeTabRef.current?.execute();
+    },
     'meta+k': () => setShowShortcuts(p=>!p),
     'ctrl+k': () => setShowShortcuts(p=>!p),
     '?': () => setShowShortcuts(p=>!p),
@@ -111,7 +119,7 @@ export function App() {
               </TabsContent>
 
               <TabsContent value="compiled" className="m-0 h-full">
-                {compiledResult && <CompiledCodeView result={compiledResult} onNavigateToExecute={() => setActiveTab('execute')} />}
+                {compiledResult && <CompiledCodeView result={compiledResult} />}
               </TabsContent>
 
               <TabsContent value="execute" className="m-0 h-full">
@@ -132,8 +140,9 @@ export function App() {
 
       <KeyboardShortcutsHelp isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
       {activeTab === 'schema' && (<StickyActionBar action="compile" onAction={() => schemaTabContainerRef.current?.compile()} disabled={isCompiling} isLoading={isCompiling}/>)}
+      {activeTab === 'compiled' && compiledResult && (<StickyActionBar action="run" onAction={() => setActiveTab('execute')} />)}
       {activeTab === 'execute' && compiledResult && (<StickyActionBar action="execute" onAction={() => executeTabRef.current?.execute()} disabled={isExecuting} isLoading={isExecuting}/>)}
-      {!(activeTab === 'schema' || (activeTab === 'execute' && compiledResult)) && (
+      {!(activeTab === 'schema' || (activeTab === 'compiled' && compiledResult) || (activeTab === 'execute' && compiledResult)) && (
         <div className="fixed inset-x-0 bottom-0 h-[var(--bottom-bar-h)] border-t bg-background/80 backdrop-blur z-40" />
       )}
     </div>

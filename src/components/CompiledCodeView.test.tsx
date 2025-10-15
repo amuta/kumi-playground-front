@@ -25,15 +25,4 @@ describe('CompiledCodeView', () => {
     expect(screen.getByRole('tab', { name: /Ruby/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /LIR/i })).toBeInTheDocument();
   });
-
-  test('renders Run button to navigate to Execute tab', () => {
-    const onNavigateToExecute = vi.fn();
-    render(<CompiledCodeView result={mockResult} onNavigateToExecute={onNavigateToExecute} />);
-
-    const runButton = screen.getByRole('button', { name: /Run/i });
-    expect(runButton).toBeInTheDocument();
-
-    runButton.click();
-    expect(onNavigateToExecute).toHaveBeenCalledTimes(1);
-  });
 });

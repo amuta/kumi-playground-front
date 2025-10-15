@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Play, Code } from 'lucide-react';
 
 interface StickyActionBarProps {
-  action: 'compile' | 'execute';
+  action: 'compile' | 'execute' | 'run';
   onAction: () => void;
   disabled?: boolean;
   isLoading?: boolean;
@@ -16,6 +16,7 @@ interface StickyActionBarProps {
  */
 export function StickyActionBar({ action, onAction, disabled, isLoading }: StickyActionBarProps) {
   const isCompile = action === 'compile';
+  const isRun = action === 'run';
   const [showLoading, setShowLoading] = useState(false);
 
   useEffect(() => {
@@ -53,14 +54,19 @@ export function StickyActionBar({ action, onAction, disabled, isLoading }: Stick
                 <Code className="h-5 w-5" />
                 Compile
               </>
+            ) : isRun ? (
+              <>
+                <Play className="h-5 w-5" />
+                Run
+              </>
             ) : (
               <>
                 <Play className="h-5 w-5" />
-                Execute 
+                Execute
               </>
             )}
             <kbd className="ml-8 px-2 py-1 text-xs font-mono bg-primary-foreground/20 rounded">
-              [Ctrl]+[Enter]
+              {isRun ? '[Ctrl]+[Enter]' : '[Ctrl]+[Enter]'}
             </kbd>
           </>
         )}

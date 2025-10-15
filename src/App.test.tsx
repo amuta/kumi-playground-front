@@ -65,4 +65,27 @@ describe('App', () => {
     });
   });
 
+  test('shows Run action bar when on Compiled Code tab', async () => {
+    const mockResult = {
+      artifact_url: 'https://example.com/artifact.js',
+      js_src: 'function _sum() {}',
+      ruby_src: 'def sum; end',
+      lir: 'sum: () -> int',
+      schema_hash: 'abc123',
+      input_form_schema: {},
+      output_schema: {},
+    };
+    vi.mocked(compileSchema).mockResolvedValue(mockResult);
+
+    render(<App />);
+
+    const compileButton = screen.getByRole('button', { name: /Compile/i });
+    compileButton.click();
+
+    await waitFor(() => {
+      const runButton = screen.getByRole('button', { name: /Run/i });
+      expect(runButton).toBeInTheDocument();
+    });
+  });
+
 });
