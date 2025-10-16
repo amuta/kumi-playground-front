@@ -23,10 +23,16 @@ export async function executeIterationLoop(
   if (!artifactUrl) throw new Error('artifact_url is missing');
   const history: IterationStep[] = [];
   let currentInput = initialInput;
+
   for (let i = 0; i < maxIterations; i++) {
-    const outputs = await executeSingleIteration(artifactUrl, currentInput, outputSchema);
-    history.push({ input: currentInput, outputs });
-    currentInput = applyFeedbackMappings(config, outputs, currentInput);
+    const stepIdx = i + 1;
+    const inForStep = { ...currentInput, step: stepIdx };
+
+    const outputs = await executeSingleIteration(artifactUrl, inForStep, outputSchema);
+    (outputs as any).step = stepIdx;
+
+    history.push({ input: inForStep, outputs });
+    currentInput = applyFeedbackMappings(config, outputs, inForStep);
   }
   return history;
 }

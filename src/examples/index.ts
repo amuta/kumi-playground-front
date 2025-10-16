@@ -6,9 +6,11 @@ import { nestedHash } from './nested-hash';
 import { tupleFunctions } from './tuple-functions';
 import { gridShift } from './grid-shift';
 import { gameOfLife } from './game-of-life';
+import { diamondWave } from './diamond-wave';
 
 export const examples: Example[] = [
   gameOfLife,
+  diamondWave,
   arithmetic,
   shoppingCart,
   arrayOperations,

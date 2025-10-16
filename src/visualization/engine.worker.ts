@@ -1,4 +1,5 @@
 // Module worker: offloads one-step-at-a-time execution and pipes outputs→inputs.
+// Adds a reserved step field to both per-step input and outputs.
 let mod: any = null;
 let schema: Record<string, any> = {};
 let execCfg: any = null;
@@ -34,14 +35,19 @@ onmessage = async (e: MessageEvent<Msg>) => {
     if (m.type === 'step') {
       let outputs: any = null, error: string | null = null;
       try {
+        const stepIdx = stepCount + 1;
+        const inForStep = { ...input, step: stepIdx };
+
         outputs = {};
         for (const k of Object.keys(schema || {})) {
           const fn = mod['_' + k];
           if (typeof fn !== 'function') throw new Error(`Output '${k}' not found`);
-          outputs[k] = fn(input);
+          outputs[k] = fn(inForStep);
         }
-        stepCount += 1;
-        input = applyFeedback(execCfg, outputs, input); // piping here
+        outputs.step = stepIdx;
+
+        stepCount = stepIdx;
+        input = applyFeedback(execCfg, outputs, inForStep); // pipe using the augmented input
       } catch (e: any) {
         error = e?.message ?? 'Execution failed';
       }

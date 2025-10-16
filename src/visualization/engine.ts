@@ -45,16 +45,23 @@ export class VisualizationEngine {
   }
 
   setInput(next: Record<string, any>) { this._input = next; }
-
   step(): EngineSnapshot {
     try {
-      const outputs = runAllOutputs(this.mod, this._input, this.schema);
+      const stepIdx = this._stepCount + 1;
+      const inForStep = { ...this._input, step: stepIdx };
+
+      const outputs = runAllOutputs(this.mod, inForStep, this.schema);
+      (outputs as any).step = stepIdx;
+
       this._outputs = outputs;
       this._error = null;
-      this._stepCount += 1;
+      this._stepCount = stepIdx;
 
       if (this.execCfg?.type === 'continuous' && this.execCfg.continuous?.feedback_mappings?.length) {
-        this._input = applyFeedbackMappings(this.execCfg, outputs, this._input);
+        this._input = applyFeedbackMappings(this.execCfg, outputs, inForStep);
+      } else {
+        // keep step visible on subsequent iterations
+        this._input = inForStep;
       }
     } catch (e) {
       this._error = e instanceof Error ? e.message : 'Execution failed';

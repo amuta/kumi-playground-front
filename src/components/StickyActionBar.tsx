@@ -16,6 +16,7 @@ interface StickyActionBarProps {
 export function StickyActionBar({ action, onAction, disabled, isLoading }: StickyActionBarProps) {
   const isCompile = action === 'compile';
   const isRun = action === 'run';
+  const isExecute = action === 'execute';
   const isVisualize = action === 'visualize';
   const isPlay = action === 'play';
   const isPause = action === 'pause';
@@ -53,6 +54,7 @@ export function StickyActionBar({ action, onAction, disabled, isLoading }: Stick
           <>
             {isCompile && (<><Code className="h-5 w-5" />Compile</>)}
             {isRun && (<><Play className="h-5 w-5" />Run</>)}
+            {isExecute && (<><Play className="h-5 w-5" />Execute</>)}
             {isVisualize && (<><Eye className="h-5 w-5" />Visualize</>)}
             {isPlay && (<><Play className="h-5 w-5" />Play</>)}
             {isPause && (<><Pause className="h-5 w-5" />Pause</>)}
