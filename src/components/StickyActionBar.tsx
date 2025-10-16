@@ -43,7 +43,7 @@ export function StickyActionBar({ action, onAction, disabled, isLoading }: Stick
         onClick={onAction}
         disabled={disabled}
         size="lg"
-        className="h-14 px-8 shadow-2xl hover:shadow-primary/20 transition-transform hover:scale-105 focus-ring gap-3 text-base font-semibold"
+        className="h-20 px-12 shadow-2xl hover:shadow-primary/20 transition-transform hover:scale-105 focus-ring gap-3 text-base font-semibold"
       >
         {showLoading ? (
           <>
