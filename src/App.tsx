@@ -122,7 +122,7 @@ export function App() {
   }, [compiledResult, activeTab, canVisualize]);
 
   return (
-    <div className="h-screen flex flex-col bg-background pb-bottom-bar overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-background pb-bottom-bar overflow-auto">
       <header className="h-[var(--header-h)] border-b shadow-sm bg-card flex-shrink-0">
         <div className="px-6 h-full flex items-center justify-between max-w-[1800px] mx-auto">
           <h1 className="text-2xl font-bold tracking-tight text-primary">Kumi Play</h1>

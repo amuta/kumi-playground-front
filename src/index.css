@@ -170,9 +170,19 @@
   --bottom-bar-h: 56px;    /* matches StickyActionBar/global bar */
 }
 /* Lock the page; only inner panes scroll */
-html,body{height:100%;overflow:hidden}
+html,body{min-height: 100%;height:100%;overflow:hidden}
+
+@supports (-webkit-touch-callout: none) {
+  html, body { height: -webkit-fill-available; }
+}
 
 @layer utilities {
   .h-under-chrome { height: calc(100vh - var(--header-h) - var(--bottom-bar-h)); }
+  @supports (height: 100dvh) {
+    .h-under-chrome { height: calc(100dvh - var(--header-h) - var(--bottom-bar-h)); }
+  }
+  @supports (height: 100svh) {
+    .h-under-chrome { height: calc(100svh - var(--header-h) - var(--bottom-bar-h)); }
+  }
   .pb-bottom-bar { padding-bottom: var(--bottom-bar-h) }
 }
