@@ -34,7 +34,7 @@ export function JsonOutputViewer({ value, height = '100%' }: JsonOutputViewerPro
       readOnly
       options={{
         tabSize: 2,
-        scrollbar: { vertical: 'hidden', horizontal: 'auto', alwaysConsumeMouseWheel: false },
+        scrollbar: { vertical: 'auto', horizontal: 'auto', alwaysConsumeMouseWheel: false },
       }}
     />
   );

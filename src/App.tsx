@@ -1,13 +1,12 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SchemaTabContainer, type SchemaTabContainerRef } from '@/components/SchemaTabContainer';
 import { CompiledCodeView } from '@/components/CompiledCodeView';
 import { ExecuteTab, type ExecuteTabRef } from '@/components/ExecuteTab';
 import { ExampleSelector } from '@/components/ExampleSelector';
-import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp';
 import { StickyActionBar } from '@/components/StickyActionBar';
 import { Button } from '@/components/ui/button';
-import { Keyboard } from 'lucide-react';
+import { Github } from 'lucide-react';
 import { useKeyboard } from '@/hooks/useKeyboard';
 import { VisualizeTab, type VisualizeTabRef } from '@/components/VisualizeTab';
 import { useExampleState } from '@/hooks/useExampleState';
@@ -37,6 +36,19 @@ export function App() {
   const visualizeTabRef = useRef<VisualizeTabRef>(null);
   const [currentExample, setCurrentExample] = useState<Example>(getDefaultExample());
 
+  useEffect(() => {
+    // Suppress Monaco language parsing errors that don't affect functionality
+    const handleError = (event: ErrorEvent) => {
+      if (event.error?.message?.includes('trying to pop an empty stack')) {
+        event.preventDefault();
+        console.log('Suppressed Monaco parser error');
+      }
+    };
+
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
+
   const {
     schemaSource,
     setSchemaSource,
@@ -54,7 +66,6 @@ export function App() {
   const [errorLine, setErrorLine] = useState<number | undefined>();
   const [errorColumn, setErrorColumn] = useState<number | undefined>();
   const [activeTab, setActiveTab] = useState('schema');
-  const [showShortcuts, setShowShortcuts] = useState(false);
   const [isCompiling, setIsCompiling] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
 
@@ -72,6 +83,7 @@ export function App() {
   };
 
   const handleCompileError = (error: CompileErrorInfo) => {
+    console.log('App.tsx handleCompileError called with:', error);
     setCompileError(error.message);
     setErrorLine(error.line);
     setErrorColumn(error.column);
@@ -136,16 +148,23 @@ export function App() {
   return (
     <div className="min-h-screen flex flex-col bg-background pb-bottom-bar overflow-auto">
       <header className="h-[var(--header-h)] border-b shadow-sm bg-card flex-shrink-0">
-        <div className="px-6 h-full flex items-center justify-between max-w-[1800px] mx-auto">
+        <div className="px-6 h-full flex items-center justify-between max-w-[1800px] mx-auto w-full">
           <h1 className="text-2xl font-bold tracking-tight text-primary">Kumi Play</h1>
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => setShowShortcuts(true)} className="gap-2 focus-ring text-muted-foreground hover:text-foreground">
-              <Keyboard className="h-4 w-4" />
-              <span className="hidden sm:inline">Shortcuts</span>
-              <kbd className="hidden md:inline-block px-1.5 py-0.5 text-xs font-mono bg-muted rounded">?</kbd>
+          <div className="flex-1 flex items-center justify-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="gap-2 focus-ring text-muted-foreground hover:text-foreground"
+              title="View on GitHub"
+            >
+              <a href="https://github.com/amuta/kumi" target="_blank" rel="noopener noreferrer">
+                <span className="text-xs">Github</span>
+                <Github className="h-4 w-4" />
+              </a>
             </Button>
-            <ExampleSelector examples={examples} currentExample={currentExample} onExampleChange={handleExampleChange} />
           </div>
+          <ExampleSelector examples={examples} currentExample={currentExample} onExampleChange={handleExampleChange} />
         </div>
       </header>
 
@@ -162,8 +181,8 @@ export function App() {
               </TabsList>
             </div>
 
-            <div className="flex-1 min-h-0 overflow-hidden">
-              <TabsContent value="schema" className="m-0 h-full">
+            <div className="flex-1 min-h-0 overflow-hidden relative">
+              <TabsContent value="schema" className="m-0 h-full" forceMount>
                 <SchemaTabContainer
                   ref={schemaTabContainerRef}
                   schemaSource={schemaSource}
@@ -176,15 +195,19 @@ export function App() {
                   onCanvasConfigChange={setCanvasConfig}
                   onCompileSuccess={handleCompileSuccess}
                   onCompileError={handleCompileError}
-                  compileError={compileError}
-                  errorLine={errorLine}
-                  errorColumn={errorColumn}
                   onCompileStart={() => setIsCompiling(true)}
                   onCompileEnd={() => setIsCompiling(false)}
                 />
-
-
               </TabsContent>
+
+              {compileError && activeTab === 'schema' && (
+                <div className="absolute bottom-0 left-0 right-0 p-4 bg-red-100 border-t-2 border-red-500 text-red-800 font-mono text-sm z-50">
+                  <div>Error: {compileError}</div>
+                  {errorLine && errorColumn && (
+                    <div>Location: line {errorLine}, column {errorColumn}</div>
+                  )}
+                </div>
+              )}
 
               <TabsContent value="compiled" className="m-0 h-full">
                 {compiledResult && <CompiledCodeView result={compiledResult} />}
@@ -224,8 +247,6 @@ export function App() {
           </Tabs>
         </div>
       </main>
-
-      <KeyboardShortcutsHelp isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
 
       {activeTab === 'schema' && (
         <StickyActionBar

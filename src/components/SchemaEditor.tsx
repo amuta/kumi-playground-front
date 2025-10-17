@@ -1,5 +1,5 @@
 
-import { useImperativeHandle, forwardRef, useRef, useEffect } from 'react';
+import { useImperativeHandle, forwardRef, useRef } from 'react';
 import { type Monaco } from '@monaco-editor/react';
 import { Card } from '@/components/ui/card';
 import { EditorView } from '@/components/EditorView';
@@ -17,9 +17,6 @@ interface SchemaEditorProps {
   onChange: (value: string) => void;
   onCompileSuccess: (result: CompileResponse) => void;
   onCompileError: (error: CompileErrorInfo) => void;
-  compileError: string | null;
-  errorLine?: number;
-  errorColumn?: number;
   onCompileStart?: () => void;
   onCompileEnd?: () => void;
 }
@@ -33,9 +30,6 @@ export const SchemaEditor = forwardRef<SchemaEditorRef, SchemaEditorProps>(({
   onChange,
   onCompileSuccess,
   onCompileError,
-  compileError,
-  errorLine,
-  errorColumn,
   onCompileStart,
   onCompileEnd,
 }, ref) => {
@@ -82,34 +76,32 @@ export const SchemaEditor = forwardRef<SchemaEditorRef, SchemaEditorProps>(({
       const result = await compileSchema(value);
       onCompileSuccess(result);
     } catch (error) {
+      let errorInfo: CompileErrorInfo = { message: 'Compilation failed' };
+
       if (error instanceof CompilationError) {
-        onCompileError({
+        errorInfo = {
           message: error.message,
           line: error.line,
           column: error.column
-        });
+        };
         if (error.line && error.column) {
           highlightErrorLine(error.line, error.column);
         }
       } else if (error instanceof ServerError) {
-        onCompileError({
+        errorInfo = {
           message: `⚠️ ${error.message}`
-        });
+        };
       } else {
-        onCompileError({
+        errorInfo = {
           message: error instanceof Error ? error.message : 'Compilation failed'
-        });
+        };
       }
+
+      onCompileError(errorInfo);
     } finally {
       onCompileEnd?.();
     }
   };
-
-  useEffect(() => {
-    if (errorLine && errorColumn && !compileError) {
-      clearErrorHighlight();
-    }
-  }, [value]);
 
   const handleEditorDidMount = (editor: MonacoEditor.IStandaloneCodeEditor, monaco: Monaco) => {
     editorRef.current = editor;
@@ -121,8 +113,8 @@ export const SchemaEditor = forwardRef<SchemaEditorRef, SchemaEditorProps>(({
   }));
 
   return (
-    <div className="flex flex-col h-full">
-      <Card className="overflow-hidden shadow-lg border-2 flex-1 min-h-[300px]">
+    <div className="h-full flex flex-col min-h-0">
+      <Card className="overflow-hidden shadow-lg border-2 flex-1 min-h-0">
         <div className="h-full">
           <EditorView
             height="100%"
@@ -133,15 +125,6 @@ export const SchemaEditor = forwardRef<SchemaEditorRef, SchemaEditorProps>(({
           />
         </div>
       </Card>
-
-      {compileError && (
-        <Card className="mt-6 p-4 bg-destructive/10 border-destructive shadow-sm">
-          <p className="text-sm text-destructive font-mono leading-relaxed">
-            {compileError}
-            {errorLine && errorColumn && ` (line ${errorLine}, column ${errorColumn})`}
-          </p>
-        </Card>
-      )}
     </div>
   );
 });

@@ -41,6 +41,7 @@ export function JsonInputEditor({
       options={{
         tabSize: 2,
         formatOnPaste: true,
+        scrollbar: { vertical: 'auto', horizontal: 'auto', alwaysConsumeMouseWheel: false },
       }}
     />
   );
