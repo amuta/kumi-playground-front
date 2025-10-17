@@ -20,6 +20,13 @@ export class CompilationError extends Error {
   }
 }
 
+export class ServerError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ServerError';
+  }
+}
+
 const API_BASE =
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE) ||
   'http://localhost:3000';
@@ -45,13 +52,19 @@ export async function compileSchema(
         const errorInfo = data.errors?.[0];
 
         if (errorInfo && typeof errorInfo === 'object' && 'message' in errorInfo) {
-          throw new CompilationError(errorInfo as CompileError);
+          if (errorInfo.line && errorInfo.column) {
+            throw new CompilationError(errorInfo as CompileError);
+          } else {
+            throw new ServerError(errorInfo.message);
+          }
+        } else if (typeof errorInfo === 'string') {
+          throw new ServerError(errorInfo);
         } else {
-          throw new Error(errorInfo || 'Compilation failed');
+          throw new ServerError(`HTTP ${response.status}: Compilation failed`);
         }
       } else {
         const text = await response.text().catch(() => '');
-        throw new Error(text || `HTTP ${response.status}`);
+        throw new ServerError(text || `HTTP ${response.status}: Server error`);
       }
     }
 

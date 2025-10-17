@@ -3,7 +3,7 @@ import { useImperativeHandle, forwardRef, useRef, useEffect } from 'react';
 import { type Monaco } from '@monaco-editor/react';
 import { Card } from '@/components/ui/card';
 import { EditorView } from '@/components/EditorView';
-import { compileSchema, type CompileResponse, CompilationError } from '@/api/compile';
+import { compileSchema, type CompileResponse, CompilationError, ServerError } from '@/api/compile';
 import type { editor as MonacoEditor } from 'monaco-editor';
 
 export interface CompileErrorInfo {
@@ -91,6 +91,10 @@ export const SchemaEditor = forwardRef<SchemaEditorRef, SchemaEditorProps>(({
         if (error.line && error.column) {
           highlightErrorLine(error.line, error.column);
         }
+      } else if (error instanceof ServerError) {
+        onCompileError({
+          message: `⚠️ ${error.message}`
+        });
       } else {
         onCompileError({
           message: error instanceof Error ? error.message : 'Compilation failed'
