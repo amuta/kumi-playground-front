@@ -1,7 +1,7 @@
 // COPY-AND-REPLACE: ./src/components/SchemaTabContainer.tsx
 import { useState, forwardRef, useImperativeHandle, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { SchemaEditor, type SchemaEditorRef } from '@/components/SchemaEditor';
+import { SchemaEditor, type SchemaEditorRef, type CompileErrorInfo } from '@/components/SchemaEditor';
 import { ConfigEditor } from '@/components/ConfigEditor';
 import type { CompileResponse } from '@/api/compile';
 import type { ExecutionConfig, VisualizationConfig, CanvasConfig } from '@/types';
@@ -16,8 +16,10 @@ interface SchemaTabContainerProps {
   onVisualizationConfigChange: (config: VisualizationConfig) => void;
   onCanvasConfigChange: (config: CanvasConfig) => void;
   onCompileSuccess: (result: CompileResponse) => void;
-  onCompileError: (error: string) => void;
+  onCompileError: (error: CompileErrorInfo) => void;
   compileError: string | null;
+  errorLine?: number;
+  errorColumn?: number;
   onCompileStart?: () => void;
   onCompileEnd?: () => void;
 }
@@ -40,6 +42,8 @@ export const SchemaTabContainer = forwardRef<SchemaTabContainerRef, SchemaTabCon
       onCompileSuccess,
       onCompileError,
       compileError,
+      errorLine,
+      errorColumn,
       onCompileStart,
       onCompileEnd,
     },
@@ -68,6 +72,8 @@ export const SchemaTabContainer = forwardRef<SchemaTabContainerRef, SchemaTabCon
               onCompileSuccess={onCompileSuccess}
               onCompileError={onCompileError}
               compileError={compileError}
+              errorLine={errorLine}
+              errorColumn={errorColumn}
               onCompileStart={onCompileStart}
               onCompileEnd={onCompileEnd}
             />

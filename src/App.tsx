@@ -12,6 +12,7 @@ import { useKeyboard } from '@/hooks/useKeyboard';
 import { VisualizeTab, type VisualizeTabRef } from '@/components/VisualizeTab';
 import { useExampleState } from '@/hooks/useExampleState';
 import type { CompileResponse } from '@/api/compile';
+import type { CompileErrorInfo } from '@/components/SchemaEditor';
 import { examples, getDefaultExample } from '@/examples';
 import type { Example, VisualizationType } from '@/types';
 
@@ -50,6 +51,8 @@ export function App() {
   } = useExampleState(currentExample);
 
   const [compileError, setCompileError] = useState<string | null>(null);
+  const [errorLine, setErrorLine] = useState<number | undefined>();
+  const [errorColumn, setErrorColumn] = useState<number | undefined>();
   const [activeTab, setActiveTab] = useState('schema');
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [isCompiling, setIsCompiling] = useState(false);
@@ -63,15 +66,24 @@ export function App() {
   const handleCompileSuccess = (result: CompileResponse) => {
     setCompiledResult(result);
     setCompileError(null);
+    setErrorLine(undefined);
+    setErrorColumn(undefined);
     setActiveTab('compiled');
   };
 
-  const handleCompileError = (error: string) => { setCompileError(error); setCompiledResult(null); };
+  const handleCompileError = (error: CompileErrorInfo) => {
+    setCompileError(error.message);
+    setErrorLine(error.line);
+    setErrorColumn(error.column);
+    setCompiledResult(null);
+  };
 
   const handleExampleChange = (example: Example) => {
     setCurrentExample(example);
     setCompiledResult(null);
     setCompileError(null);
+    setErrorLine(undefined);
+    setErrorColumn(undefined);
     setActiveTab('schema');
   };
 
@@ -165,6 +177,8 @@ export function App() {
                   onCompileSuccess={handleCompileSuccess}
                   onCompileError={handleCompileError}
                   compileError={compileError}
+                  errorLine={errorLine}
+                  errorColumn={errorColumn}
                   onCompileStart={() => setIsCompiling(true)}
                   onCompileEnd={() => setIsCompiling(false)}
                 />
