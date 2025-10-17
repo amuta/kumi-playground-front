@@ -2,6 +2,24 @@ import type { CompileResult } from '../types';
 
 export type CompileResponse = CompileResult;
 
+export interface CompileError {
+  message: string;
+  line?: number;
+  column?: number;
+}
+
+export class CompilationError extends Error {
+  line?: number;
+  column?: number;
+
+  constructor(error: CompileError) {
+    super(error.message);
+    this.name = 'CompilationError';
+    this.line = error.line;
+    this.column = error.column;
+  }
+}
+
 const API_BASE =
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE) ||
   'http://localhost:3000';
@@ -23,8 +41,14 @@ export async function compileSchema(
     if (!response.ok) {
       const ctype = response.headers.get('content-type') || '';
       if (ctype.includes('application/json')) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.errors?.[0] || 'Compilation failed');
+        const data = await response.json().catch(() => ({}));
+        const errorInfo = data.errors?.[0];
+
+        if (errorInfo && typeof errorInfo === 'object' && 'message' in errorInfo) {
+          throw new CompilationError(errorInfo as CompileError);
+        } else {
+          throw new Error(errorInfo || 'Compilation failed');
+        }
       } else {
         const text = await response.text().catch(() => '');
         throw new Error(text || `HTTP ${response.status}`);

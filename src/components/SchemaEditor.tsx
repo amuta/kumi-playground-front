@@ -3,7 +3,7 @@ import { useImperativeHandle, forwardRef, useRef } from 'react';
 import { type Monaco } from '@monaco-editor/react';
 import { Card } from '@/components/ui/card';
 import { EditorView } from '@/components/EditorView';
-import { compileSchema, type CompileResponse } from '@/api/compile';
+import { compileSchema, type CompileResponse, CompilationError } from '@/api/compile';
 import type { editor as MonacoEditor } from 'monaco-editor';
 
 
@@ -45,7 +45,14 @@ export const SchemaEditor = forwardRef<SchemaEditorRef, SchemaEditorProps>(({
       const result = await compileSchema(value);
       onCompileSuccess(result);
     } catch (error) {
-      onCompileError(error instanceof Error ? error.message : 'Compilation failed');
+      if (error instanceof CompilationError) {
+        const location = error.line && error.column
+          ? ` (line ${error.line}, column ${error.column})`
+          : '';
+        onCompileError(`${error.message}${location}`);
+      } else {
+        onCompileError(error instanceof Error ? error.message : 'Compilation failed');
+      }
     } finally {
       onCompileEnd?.();
     }

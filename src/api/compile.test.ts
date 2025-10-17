@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { compileKumiSchema } from './compile';
+import { compileKumiSchema, CompilationError } from './compile';
 import type { CompileResult } from '../types';
 
 describe('compileKumiSchema', () => {
@@ -109,5 +109,93 @@ describe('compileKumiSchema', () => {
 
     const result = await compileKumiSchema('');
     expect(result).toEqual(mockResult);
+  });
+
+  describe('structured error handling', () => {
+    it('throws CompilationError with line and column for syntax errors', async () => {
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: false,
+        headers: { get: () => 'application/json' },
+        json: async () => ({
+          ok: false,
+          errors: [{
+            message: 'Expected schema, got input',
+            line: 1,
+            column: 6
+          }]
+        })
+      });
+
+      try {
+        await compileKumiSchema('input { x: integer }');
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(CompilationError);
+        expect((error as CompilationError).message).toBe('Expected schema, got input');
+        expect((error as CompilationError).line).toBe(1);
+        expect((error as CompilationError).column).toBe(6);
+      }
+    });
+
+    it('throws CompilationError with line and column for parse errors', async () => {
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: false,
+        headers: { get: () => 'application/json' },
+        json: async () => ({
+          ok: false,
+          errors: [{
+            message: 'Unexpected token +',
+            line: 3,
+            column: 15
+          }]
+        })
+      });
+
+      try {
+        await compileKumiSchema('schema Test\ninput { x: integer }\noutput { y: x + + 5 }');
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(CompilationError);
+        expect((error as CompilationError).message).toBe('Unexpected token +');
+        expect((error as CompilationError).line).toBe(3);
+        expect((error as CompilationError).column).toBe(15);
+      }
+    });
+
+    it('throws CompilationError without line/column for errors without location', async () => {
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: false,
+        headers: { get: () => 'application/json' },
+        json: async () => ({
+          ok: false,
+          errors: [{
+            message: 'Internal compiler error'
+          }]
+        })
+      });
+
+      try {
+        await compileKumiSchema('some schema');
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(CompilationError);
+        expect((error as CompilationError).message).toBe('Internal compiler error');
+        expect((error as CompilationError).line).toBeUndefined();
+        expect((error as CompilationError).column).toBeUndefined();
+      }
+    });
+
+    it('falls back to generic Error for string errors', async () => {
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: false,
+        headers: { get: () => 'application/json' },
+        json: async () => ({
+          errors: ['Simple string error']
+        })
+      });
+
+      await expect(compileKumiSchema('invalid'))
+        .rejects.toThrow('Simple string error');
+    });
   });
 });
