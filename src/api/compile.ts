@@ -52,15 +52,11 @@ export async function compileSchema(
         const errorInfo = data.errors?.[0];
 
         if (errorInfo && typeof errorInfo === 'object' && 'message' in errorInfo) {
-          if (errorInfo.line && errorInfo.column) {
-            throw new CompilationError(errorInfo as CompileError);
-          } else {
-            throw new ServerError(errorInfo.message);
-          }
+          throw new CompilationError(errorInfo as CompileError);
         } else if (typeof errorInfo === 'string') {
-          throw new ServerError(errorInfo);
+          throw new CompilationError({ message: errorInfo });
         } else {
-          throw new ServerError(`HTTP ${response.status}: Compilation failed`);
+          throw new CompilationError({ message: `HTTP ${response.status}: Compilation failed` });
         }
       } else {
         const text = await response.text().catch(() => '');

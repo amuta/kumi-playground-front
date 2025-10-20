@@ -200,3 +200,8 @@ html,body{min-height: 100%;height:100%;overflow:hidden}
   }
   .pb-bottom-bar { padding-bottom: var(--bottom-bar-h) }
 }
+
+/* Ensure Monaco hover/diagnostic boxes use viewport positioning */
+.monaco-hover {
+  position: fixed !important;
+}

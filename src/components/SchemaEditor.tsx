@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { EditorView } from '@/components/EditorView';
 import { compileSchema, type CompileResponse, CompilationError, ServerError } from '@/api/compile';
 import { registerKumiLanguage, configureKumiLanguage } from '@/language/monaco';
+import { toDiagnostics } from '@/language/diagnostics';
 import type { editor as MonacoEditor } from 'monaco-editor';
 
 export interface CompileErrorInfo {
@@ -36,7 +37,6 @@ export const SchemaEditor = forwardRef<SchemaEditorRef, SchemaEditorProps>(({
 }, ref) => {
   const editorRef = useRef<MonacoEditor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
-  const decorationsRef = useRef<string[]>([]);
 
   const handleEditorChange = (newValue: string | undefined) => {
     if (newValue !== undefined) {
@@ -44,35 +44,36 @@ export const SchemaEditor = forwardRef<SchemaEditorRef, SchemaEditorProps>(({
     }
   };
 
-  const highlightErrorLine = (line: number, column: number) => {
+  const setDiagnostics = (error: CompilationError) => {
     if (!editorRef.current || !monacoRef.current) return;
 
     const editor = editorRef.current;
     const monaco = monacoRef.current;
+    const model = editor.getModel();
+    if (!model) return;
 
-    const newDecorations: MonacoEditor.IModelDeltaDecoration[] = [{
-      range: new monaco.Range(line, column, line, column + 1),
-      options: {
-        className: 'error-highlight',
-        glyphMarginClassName: 'codicon codicon-error',
-        glyphMarginHoverMessage: { value: 'Compilation error' },
-        inlineClassName: 'error-underline',
-        isWholeLine: true,
-      }
-    }];
+    const diagnostics = toDiagnostics(error);
+    monaco.editor.setModelMarkers(model, 'kumi', diagnostics as any);
 
-    decorationsRef.current = editor.deltaDecorations(decorationsRef.current, newDecorations);
-    editor.revealLineInCenter(line);
+    if (error.line) {
+      editor.revealLineInCenter(error.line);
+    }
   };
 
-  const clearErrorHighlight = () => {
-    if (!editorRef.current) return;
-    decorationsRef.current = editorRef.current.deltaDecorations(decorationsRef.current, []);
+  const clearDiagnostics = () => {
+    if (!monacoRef.current || !editorRef.current) return;
+
+    const editor = editorRef.current;
+    const monaco = monacoRef.current;
+    const model = editor.getModel();
+    if (!model) return;
+
+    monaco.editor.setModelMarkers(model, 'kumi', []);
   };
 
   const handleCompile = async () => {
     onCompileStart?.();
-    clearErrorHighlight();
+    clearDiagnostics();
     try {
       const result = await compileSchema(value);
       onCompileSuccess(result);
@@ -85,9 +86,7 @@ export const SchemaEditor = forwardRef<SchemaEditorRef, SchemaEditorProps>(({
           line: error.line,
           column: error.column
         };
-        if (error.line && error.column) {
-          highlightErrorLine(error.line, error.column);
-        }
+        setDiagnostics(error);
       } else if (error instanceof ServerError) {
         errorInfo = {
           message: `⚠️ ${error.message}`
@@ -118,8 +117,8 @@ export const SchemaEditor = forwardRef<SchemaEditorRef, SchemaEditorProps>(({
 
   return (
     <div className="h-full flex flex-col min-h-0">
-      <Card className="overflow-hidden shadow-lg border-2 flex-1 min-h-0">
-        <div className="h-full">
+      <Card className="shadow-lg border-2 flex-1 min-h-0">
+        <div className="h-full overflow-hidden">
           <EditorView
             height="100%"
             language="kumi"

@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SchemaTabContainer, type SchemaTabContainerRef } from '@/components/SchemaTabContainer';
 import { CompiledCodeView } from '@/components/CompiledCodeView';
@@ -37,18 +37,6 @@ export function App() {
   const visualizeTabRef = useRef<VisualizeTabRef>(null);
   const [currentExample, setCurrentExample] = useUrlExample(examples);
 
-  useEffect(() => {
-    // Suppress Monaco language parsing errors that don't affect functionality
-    const handleError = (event: ErrorEvent) => {
-      if (event.error?.message?.includes('trying to pop an empty stack')) {
-        event.preventDefault();
-        console.log('Suppressed Monaco parser error');
-      }
-    };
-
-    window.addEventListener('error', handleError);
-    return () => window.removeEventListener('error', handleError);
-  }, []);
 
   const {
     schemaSource,
