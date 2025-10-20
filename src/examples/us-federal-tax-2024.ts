@@ -11,7 +11,6 @@ export const usFederalTax2024: Example = {
     float  :state_rate
     float  :local_rate
     float  :retirement_contrib
-    string :filing_status
 
     array :statuses do
       hash :status do
@@ -67,7 +66,6 @@ export const usFederalTax2024: Example = {
 
   # array of result objects, one per status
   value :summary, {
-    filing_status: input.statuses.status.name,
     federal: { marginal: fed_marg, effective: fed_eff, tax: fed_tax },
     fica:    { effective: fica_eff, tax: fica_tax },
     state:   { marginal: input.state_rate, effective: input.state_rate, tax: state_tax },
@@ -83,7 +81,6 @@ end`,
     state_rate: 0.0,
     local_rate: 0.0,
     retirement_contrib: 0.0,
-    filing_status: 'single',
     statuses: [
       {
         name: 'single',
