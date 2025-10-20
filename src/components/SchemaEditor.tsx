@@ -4,6 +4,7 @@ import { type Monaco } from '@monaco-editor/react';
 import { Card } from '@/components/ui/card';
 import { EditorView } from '@/components/EditorView';
 import { compileSchema, type CompileResponse, CompilationError, ServerError } from '@/api/compile';
+import { registerKumiLanguage, configureKumiLanguage } from '@/language/monaco';
 import type { editor as MonacoEditor } from 'monaco-editor';
 
 export interface CompileErrorInfo {
@@ -106,6 +107,9 @@ export const SchemaEditor = forwardRef<SchemaEditorRef, SchemaEditorProps>(({
   const handleEditorDidMount = (editor: MonacoEditor.IStandaloneCodeEditor, monaco: Monaco) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
+
+    registerKumiLanguage(monaco);
+    configureKumiLanguage(monaco);
   };
 
   useImperativeHandle(ref, () => ({
@@ -118,7 +122,7 @@ export const SchemaEditor = forwardRef<SchemaEditorRef, SchemaEditorProps>(({
         <div className="h-full">
           <EditorView
             height="100%"
-            language="ruby"
+            language="kumi"
             value={value}
             onChange={handleEditorChange}
             onMount={handleEditorDidMount}
