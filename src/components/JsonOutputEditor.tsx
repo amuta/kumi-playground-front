@@ -1,7 +1,7 @@
-// components/JsonOutputViewer.tsx
+// components/JsonOutputEditor.tsx
 import { EditorView } from '@/components/EditorView';
 
-interface JsonOutputViewerProps {
+interface JsonOutputEditorProps {
   value: any;
   height?: string; // use "100%" to fill parent
 }
@@ -23,19 +23,21 @@ function safeJsonStringify(value: any): string {
   }
 }
 
-export function JsonOutputViewer({ value, height = '100%' }: JsonOutputViewerProps) {
+export function JsonOutputEditor({ value, height = '100%' }: JsonOutputEditorProps) {
   const jsonString = safeJsonStringify(value);
 
   return (
-    <EditorView
-      height={height}
-      language="json"
-      value={jsonString}
-      readOnly
-      options={{
-        tabSize: 2,
-        scrollbar: { vertical: 'auto', horizontal: 'auto', alwaysConsumeMouseWheel: false },
-      }}
-    />
+    <div className="h-full flex flex-col min-h-0 overflow-hidden">
+      <EditorView
+        height={height}
+        language="json"
+        value={jsonString}
+        readOnly
+        options={{
+          tabSize: 2,
+          scrollbar: { vertical: 'auto', horizontal: 'auto', alwaysConsumeMouseWheel: false },
+        }}
+      />
+    </div>
   );
 }

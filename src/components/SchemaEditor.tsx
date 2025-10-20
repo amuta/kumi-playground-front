@@ -122,6 +122,9 @@ export const SchemaEditor = forwardRef<SchemaEditorRef, SchemaEditorProps>(({
             value={value}
             onChange={handleEditorChange}
             onMount={handleEditorDidMount}
+            options={{
+              scrollbar: { vertical: 'auto', horizontal: 'auto', alwaysConsumeMouseWheel: false },
+            }}
           />
         </div>
       </Card>

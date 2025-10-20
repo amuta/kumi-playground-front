@@ -1,5 +1,5 @@
 import type { OutputField, Example, VisualizationType, VisualizationConfig } from '@/types';
-import { JsonOutputViewer } from './JsonOutputViewer';
+import { JsonOutputEditor } from './JsonOutputEditor';
 import { TableVisualizer } from './visualizers/TableVisualizer';
 import { GridVisualizer } from './visualizers/GridVisualizer';
 
@@ -10,7 +10,7 @@ interface OutputViewProps {
   visualizationConfig?: VisualizationConfig;
 }
 
-const visualizers = { json: JsonOutputViewer, table: TableVisualizer, grid: GridVisualizer } as const;
+const visualizers = { json: JsonOutputEditor, table: TableVisualizer, grid: GridVisualizer } as const;
 
 export function OutputView({ results, example, visualizationConfig }: OutputViewProps) {
   const getVisualizationType = (outputName: string): VisualizationType => {
@@ -35,7 +35,7 @@ export function OutputView({ results, example, visualizationConfig }: OutputView
     <div className="flex flex-col h-full min-h-0 space-y-6">
       {Object.keys(jsonOutputs).length > 0 && (
         <div className="flex-1 min-h-0">
-          <JsonOutputViewer value={jsonOutputs} height="100%" />
+          <JsonOutputEditor value={jsonOutputs} height="100%" />
         </div>
       )}
       {customVisualizations.map(({ name, value, vizType }) => {

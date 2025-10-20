@@ -71,7 +71,7 @@ export function ConfigEditor({
     <div className="flex flex-col h-full">
       <Card className="overflow-hidden shadow-lg border-2 flex-1 min-h-[300px]">
         <div className="h-full">
-          <EditorView height="100%" language="json" value={jsonValue} onChange={handleChange} />
+          <EditorView height="100%" language="json" value={jsonValue} onChange={handleChange} options={{ lineNumbers: 'off', formatOnPaste: true }} />
         </div>
       </Card>
       {error && (

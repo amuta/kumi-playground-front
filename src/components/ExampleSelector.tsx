@@ -26,17 +26,21 @@ export function ExampleSelector({
   };
 
   return (
-    <Select value={currentExample.id} onValueChange={handleValueChange}>
-      <SelectTrigger className="w-[280px] border-2 border-border bg-muted text-foreground hover:bg-accent hover:border-primary transition-all">
-        <SelectValue placeholder="Select an example" />
-      </SelectTrigger>
-      <SelectContent>
-        {examples.map((example) => (
-          <SelectItem key={example.id} value={example.id}>
-            {example.title}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+      <span className="text-base font-medium text-muted-foreground whitespace-nowrap hidden sm:inline">Examples:</span>
+      <span className="text-sm font-medium text-muted-foreground sm:hidden">Ex:</span>
+      <Select value={currentExample.id} onValueChange={handleValueChange}>
+        <SelectTrigger className="w-auto sm:w-[240px] border-2 border-primary bg-accent text-accent-foreground hover:bg-accent/90 transition-all font-medium text-sm sm:text-base px-3 py-2" title="Change to explore different examples">
+          <SelectValue placeholder="Select an example" />
+        </SelectTrigger>
+        <SelectContent>
+          {examples.map((example) => (
+            <SelectItem key={example.id} value={example.id}>
+              {example.title}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }

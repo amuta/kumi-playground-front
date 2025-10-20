@@ -148,28 +148,38 @@ export function App() {
   return (
     <div className="min-h-screen flex flex-col bg-background pb-bottom-bar overflow-auto">
       <header className="h-[var(--header-h)] border-b shadow-sm bg-card flex-shrink-0">
-        <div className="px-6 h-full flex items-center justify-between max-w-[1800px] mx-auto w-full">
-          <h1 className="text-2xl font-bold tracking-tight text-primary">Kumi Play</h1>
-          <div className="flex-1 flex items-center justify-center">
-            <Button
-              variant="ghost"
-              size="sm"
-              asChild
-              className="gap-2 focus-ring text-muted-foreground hover:text-foreground"
+        <div className="px-6 h-full flex items-center justify-between max-w-[1800px] mx-auto w-full gap-4">
+          <h1 className="text-2xl font-bold tracking-tight text-primary hidden lg:block">Kumi Play</h1>
+          <div className="flex-1 flex items-center justify-center hidden lg:flex">
+            <a
+              href="https://github.com/amuta/kumi"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="gap-2 focus-ring border-2 border-primary bg-primary/10 text-primary hover:bg-primary/20 font-medium px-4 py-2 rounded-md inline-flex items-center"
               title="View on GitHub"
             >
-              <a href="https://github.com/amuta/kumi" target="_blank" rel="noopener noreferrer">
-                <span className="text-xs">Github</span>
-                <Github className="h-4 w-4" />
-              </a>
-            </Button>
+              <span className="text-sm font-bold">Github</span>
+              <Github className="h-5 w-5" />
+            </a>
           </div>
           <ExampleSelector examples={examples} currentExample={currentExample} onExampleChange={handleExampleChange} />
+          <div className="lg:hidden">
+            <a
+              href="https://github.com/amuta/kumi"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="gap-1.5 focus-ring text-primary hover:text-primary/70 transition-colors inline-flex items-center text-sm"
+              title="View on GitHub"
+            >
+              <span>Github</span>
+              <Github className="h-5 w-5" />
+            </a>
+          </div>
         </div>
       </header>
 
       <main className="h-under-chrome min-h-0 overflow-hidden">
-        <div className="h-full min-h-0 flex flex-col max-w-[1800px] mx-auto w-full p-6">
+        <div className="h-full min-h-0 flex flex-col max-w-[1800px] mx-auto w-full p-6 pb-32 sm:pb-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full min-h-0 flex flex-col">
             <div className="sticky top-0 z-20 bg-background">
               <TabsList className="grid w-full grid-cols-4 mb-6">

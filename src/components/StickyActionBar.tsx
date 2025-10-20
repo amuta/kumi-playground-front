@@ -7,11 +7,7 @@ interface StickyActionBarProps {
   onAction: () => void;
   disabled?: boolean;
   isLoading?: boolean;
-  /** One-time visual boost on first render */
-  boostOnFirstRender?: boolean;
 }
-
-const SEEN_KEY = 'sticky_action_bar_seen_v1';
 
 /**
  * Floating action button that sits ABOVE the global bottom bar.
@@ -22,7 +18,6 @@ export function StickyActionBar({
   onAction,
   disabled,
   isLoading,
-  boostOnFirstRender = true,
 }: StickyActionBarProps) {
   const isCompile = action === 'compile';
   const isRun = action === 'run';
@@ -32,7 +27,6 @@ export function StickyActionBar({
   const isPause = action === 'pause';
 
   const [showLoading, setShowLoading] = useState(false);
-  const [firstBoost, setFirstBoost] = useState(false);
 
   useEffect(() => {
     let t: ReturnType<typeof setTimeout> | undefined;
@@ -41,54 +35,38 @@ export function StickyActionBar({
     return () => t && clearTimeout(t);
   }, [isLoading]);
 
-  // One-time boost on first render
-  useEffect(() => {
-    if (!boostOnFirstRender) return;
-    const seen = typeof window !== 'undefined' && localStorage.getItem(SEEN_KEY);
-    if (!seen) setFirstBoost(true);
-  }, [boostOnFirstRender]);
-
-  // Auto-dismiss boost after a few seconds
-  useEffect(() => {
-    if (!firstBoost) return;
-    const t = setTimeout(() => {
-      try { localStorage.setItem(SEEN_KEY, '1'); } catch {}
-      setFirstBoost(false);
-    }, 3500);
-    return () => clearTimeout(t);
-  }, [firstBoost]);
-
   const bottomOffset = useMemo(
-    () => `calc(var(--bottom-bar-h, 56px) + env(safe-area-inset-bottom, 0px) + 0.75rem)`,
+    () => `env(safe-area-inset-bottom, 0px)`,
     []
   );
 
   const handleClick = () => {
-    if (firstBoost) {
-      try { localStorage.setItem(SEEN_KEY, '1'); } catch {}
-      setFirstBoost(false);
-    }
     onAction();
   };
 
-  // Base size bumped; firstBoost adds temporary emphasis
   const baseBtn =
-    'h-24 px-16 text-lg shadow-2xl hover:shadow-primary/20 transition-transform hover:scale-105 focus-ring gap-3 font-semibold';
-  const boosted =
-    'ring-4 ring-primary/40 shadow-primary/40 scale-105 animate-pulse';
+    'shadow-2xl hover:shadow-primary/20 transition-transform hover:scale-105 focus-ring gap-3 font-semibold';
   const loadingSpinner =
-    'h-6 w-6 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent';
+    'h-8 w-8 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent';
 
   return (
     <div
       className="fixed left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 fade-in-0 duration-300"
-      style={{ bottom: bottomOffset }}
+      style={{ bottom: bottomOffset, padding: '0 1rem 1rem 1rem' }}
     >
       <Button
         onClick={handleClick}
         disabled={disabled}
         size="lg"
-        className={`${baseBtn} ${firstBoost ? boosted : ''}`}
+        className={baseBtn}
+        style={{
+          height: 'clamp(48px, 8vw, 64px)',
+          padding: '0 clamp(16px, 4vw, 28px)',
+          fontSize: 'clamp(14px, 3vw, 16px)',
+          minWidth: 'clamp(160px, 30vw, 240px)',
+          gap: '0.375rem',
+          borderRadius: '0.75rem',
+        }}
       >
         {showLoading ? (
           <>
@@ -97,14 +75,20 @@ export function StickyActionBar({
           </>
         ) : (
           <>
-            {isCompile && (<><Code className="h-6 w-6" />Compile</>)}
-            {isRun && (<><Play className="h-6 w-6" />Run</>)}
-            {isExecute && (<><Play className="h-6 w-6" />Execute</>)}
-            {isVisualize && (<><Eye className="h-6 w-6" />Visualize</>)}
-            {isPlay && (<><Play className="h-6 w-6" />Play</>)}
-            {isPause && (<><Pause className="h-6 w-6" />Pause</>)}
-            <kbd className="ml-8 px-2.5 py-1.5 text-xs font-mono bg-primary-foreground/20 rounded">
-              {isPlay || isPause ? '[Ctrl]+[Enter]' : '[Ctrl]+[Enter]'}
+            {isCompile && <Code className="h-8 w-8" />}
+            {isRun && <Play className="h-8 w-8" />}
+            {isExecute && <Play className="h-8 w-8" />}
+            {isVisualize && <Eye className="h-8 w-8" />}
+            {isPlay && <Play className="h-8 w-8" />}
+            {isPause && <Pause className="h-8 w-8" />}
+            {isCompile && <span>Compile</span>}
+            {isRun && <span>Run</span>}
+            {isExecute && <span>Execute</span>}
+            {isVisualize && <span>Visualize</span>}
+            {isPlay && <span>Play</span>}
+            {isPause && <span>Pause</span>}
+            <kbd className="hidden sm:inline-block px-3 py-2 text-sm font-mono bg-primary-foreground/20 rounded">
+              [Ctrl]+[Enter]
             </kbd>
           </>
         )}

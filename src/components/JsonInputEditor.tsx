@@ -33,16 +33,19 @@ export function JsonInputEditor({
   };
 
   return (
-    <EditorView
-      height={height}
-      language="json"
-      value={editorValue}
-      onChange={handleChange}
-      options={{
-        tabSize: 2,
-        formatOnPaste: true,
-        scrollbar: { vertical: 'auto', horizontal: 'auto', alwaysConsumeMouseWheel: false },
-      }}
-    />
+    <div className="h-full flex flex-col min-h-0 overflow-hidden">
+      <EditorView
+        height={height}
+        language="json"
+        value={editorValue}
+        onChange={handleChange}
+        options={{
+          tabSize: 2,
+          formatOnPaste: true,
+          lineNumbers: 'off',
+          scrollbar: { vertical: 'auto', horizontal: 'auto', alwaysConsumeMouseWheel: false },
+        }}
+      />
+    </div>
   );
 }

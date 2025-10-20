@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
-import { JsonOutputViewer } from './JsonOutputViewer';
+import { JsonOutputEditor } from './JsonOutputEditor';
 
 vi.mock('@monaco-editor/react', () => ({
   default: ({ value }: any) => (
@@ -8,11 +8,11 @@ vi.mock('@monaco-editor/react', () => ({
   ),
 }));
 
-describe('JsonOutputViewer', () => {
+describe('JsonOutputEditor', () => {
   it('renders Monaco editor with formatted JSON', () => {
     const value = { name: 'Alice', age: 30 };
 
-    render(<JsonOutputViewer value={value} />);
+    render(<JsonOutputEditor value={value} />);
 
     const editor = screen.getByTestId('monaco-json');
     const displayedValue = editor.getAttribute('data-value');
@@ -24,7 +24,7 @@ describe('JsonOutputViewer', () => {
   it('handles nested objects', () => {
     const value = { user: { name: 'Bob', items: [1, 2, 3] } };
 
-    render(<JsonOutputViewer value={value} />);
+    render(<JsonOutputEditor value={value} />);
 
     const editor = screen.getByTestId('monaco-json');
     expect(editor).toBeInTheDocument();
@@ -33,7 +33,7 @@ describe('JsonOutputViewer', () => {
   it('uses custom height when provided', () => {
     const value = { test: 'data' };
 
-    render(<JsonOutputViewer value={value} height="200px" />);
+    render(<JsonOutputEditor value={value} height="200px" />);
 
     const editor = screen.getByTestId('monaco-json');
     expect(editor).toBeInTheDocument();
@@ -41,7 +41,7 @@ describe('JsonOutputViewer', () => {
 
   describe('edge cases', () => {
     it('handles null value', () => {
-      render(<JsonOutputViewer value={null} />);
+      render(<JsonOutputEditor value={null} />);
 
       const editor = screen.getByTestId('monaco-json');
       const displayedValue = editor.getAttribute('data-value');
@@ -50,7 +50,7 @@ describe('JsonOutputViewer', () => {
     });
 
     it('handles undefined value', () => {
-      render(<JsonOutputViewer value={undefined} />);
+      render(<JsonOutputEditor value={undefined} />);
 
       const editor = screen.getByTestId('monaco-json');
       const displayedValue = editor.getAttribute('data-value');
@@ -59,7 +59,7 @@ describe('JsonOutputViewer', () => {
     });
 
     it('handles empty object', () => {
-      render(<JsonOutputViewer value={{}} />);
+      render(<JsonOutputEditor value={{}} />);
 
       const editor = screen.getByTestId('monaco-json');
       const displayedValue = editor.getAttribute('data-value');
@@ -68,7 +68,7 @@ describe('JsonOutputViewer', () => {
     });
 
     it('handles empty array', () => {
-      render(<JsonOutputViewer value={[]} />);
+      render(<JsonOutputEditor value={[]} />);
 
       const editor = screen.getByTestId('monaco-json');
       const displayedValue = editor.getAttribute('data-value');
@@ -79,7 +79,7 @@ describe('JsonOutputViewer', () => {
     it('handles object with undefined values', () => {
       const value = { a: 1, b: undefined, c: 'test' };
 
-      render(<JsonOutputViewer value={value} />);
+      render(<JsonOutputEditor value={value} />);
 
       const editor = screen.getByTestId('monaco-json');
       const displayedValue = editor.getAttribute('data-value');
@@ -92,7 +92,7 @@ describe('JsonOutputViewer', () => {
       const obj: any = { name: 'test' };
       obj.self = obj;
 
-      render(<JsonOutputViewer value={obj} />);
+      render(<JsonOutputEditor value={obj} />);
 
       const editor = screen.getByTestId('monaco-json');
       const displayedValue = editor.getAttribute('data-value');
@@ -103,7 +103,7 @@ describe('JsonOutputViewer', () => {
     it('handles function values gracefully', () => {
       const value = { fn: () => {}, data: 'test' };
 
-      render(<JsonOutputViewer value={value} />);
+      render(<JsonOutputEditor value={value} />);
 
       const editor = screen.getByTestId('monaco-json');
       expect(editor).toBeInTheDocument();
@@ -113,7 +113,7 @@ describe('JsonOutputViewer', () => {
       const sym = Symbol('test');
       const value = { [sym]: 'value', normal: 'data' };
 
-      render(<JsonOutputViewer value={value} />);
+      render(<JsonOutputEditor value={value} />);
 
       const editor = screen.getByTestId('monaco-json');
       expect(editor).toBeInTheDocument();

@@ -1,6 +1,6 @@
 // src/components/ExecuteTab.tsx
 import { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { JsonInputEditor } from '@/components/JsonInputEditor';
 import { OutputView } from '@/components/OutputView';
 import { runAllOutputsFromUrl } from '@/execution/artifact-runner';
@@ -50,6 +50,7 @@ export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function Ex
   const [executionError, setExecutionError] = useState<string | null>(null);
   const [isExecuting, setIsExecuting] = useState(false);
   const [jsonError, setJsonError] = useState<string | null>(null);
+  const [activeSubTab, setActiveSubTab] = useState<'input' | 'output'>('input');
 
   // Reset inputs when example or compiled artifact changes
   useEffect(() => {
@@ -61,6 +62,7 @@ export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function Ex
   const handleExecute = async () => {
     setIsExecuting(true);
     setExecutionError(null);
+    setActiveSubTab('output');
     onExecuteStart?.();
     try {
       const results = await runAllOutputsFromUrl(
@@ -86,69 +88,47 @@ export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function Ex
   useImperativeHandle(ref, () => ({ execute: handleExecute, isExecuting }));
 
   const isContinuous = executionConfig?.type === 'continuous' && !!executionConfig.continuous?.feedback_mappings?.length;
-  const headingLabel = hideInput
-    ? (isContinuous ? 'Input → Output (continuous)' : 'Output (auto-piped)')
-    : 'Output';
-
-  const wrapperClass = 'h-[calc(100vh-4rem)] min-h-0 p-6';
-  const gridClass = hideInput
-    ? 'grid grid-cols-1 gap-8 h-full items-stretch min-h-0'
-    : 'grid grid-cols-2 gap-8 h-full items-stretch min-h-0';
 
   return (
-    <div className={wrapperClass}>
-      <div className={gridClass}>
-        {!hideInput && (
-          <div className="flex flex-col h-full min-h-0">
-            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">
-              Input
-            </h3>
-            <Card className="shadow-lg border-2 flex-1 flex flex-col min-h-0">
-              <CardContent className="pt-6 space-y-4 flex-1 min-h-0 flex">
-                <div className="flex-1 min-h-0">
-                  <JsonInputEditor value={inputValues} onChange={setInputValues} onError={setJsonError} height="100%" />
-                </div>
-                {jsonError && (
-                  <p className="text-destructive text-sm font-medium">Invalid JSON: {jsonError}</p>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        )}
+    <div className="h-[calc(100vh-4rem)] min-h-0 p-6 flex flex-col">
+      <Tabs value={activeSubTab} onValueChange={(v) => setActiveSubTab(v as 'input' | 'output')} className="h-full min-h-0 flex flex-col">
+        <TabsList className="grid w-full grid-cols-2 mb-4">
+          {!hideInput && <TabsTrigger value="input">Input</TabsTrigger>}
+          <TabsTrigger value="output">Output</TabsTrigger>
+        </TabsList>
 
-        <div className="flex flex-col h-full min-h-0">
-          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-1">
-            {headingLabel}
-          </h3>
-          {hideInput && isContinuous && (
-            <p className="text-xs text-muted-foreground mb-3">
-              Outputs feed back into inputs each run.
-            </p>
+        <div className="flex-1 min-h-0">
+          {!hideInput && (
+            <TabsContent value="input" className="m-0 h-full">
+              <JsonInputEditor value={inputValues} onChange={setInputValues} onError={setJsonError} height="100%" />
+              {jsonError && (
+                <p className="text-destructive text-sm font-medium mt-2">Invalid JSON: {jsonError}</p>
+              )}
+            </TabsContent>
           )}
 
-          {executionError ? (
-            <Card className="bg-destructive/10 border-destructive shadow-sm flex-1 flex flex-col min-h-0">
-              <CardContent className="pt-6 flex-1 min-h-0 overflow-hidden">
-                <p className="font-mono text-sm text-destructive leading-relaxed">{executionError}</p>
-              </CardContent>
-            </Card>
-          ) : executionResult ? (
-            <Card className="shadow-lg border-2 flex-1 flex flex-col overflow-hidden min-h-0">
-              <CardContent className="pt-6 flex-1 min-h-0 flex flex-col">
-                <div className="flex-1 min-h-0">
-                  <OutputView
-                    results={executionResult}
-                    outputSchema={compiledResult.output_schema}
-                    example={example}
-                    // visualizationConfig intentionally omitted here; Execute tab shows JSON by default unless example overrides.
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
+          <TabsContent value="output" className="m-0 h-full flex flex-col">
+            {hideInput && isContinuous && (
+              <p className="text-xs text-muted-foreground mb-3 flex-shrink-0">
+                Outputs feed back into inputs each run.
+              </p>
+            )}
 
-            <Card className="shadow-lg border-2 border-dashed bg-muted/20 flex-1 flex flex-col min-h-0">
-              <CardContent className="pt-6 flex-1 min-h-0 flex items-center justify-center">
+            {executionError ? (
+              <div className="flex-1 min-h-0 bg-destructive/10 border-2 border-destructive rounded-md shadow-sm p-6 overflow-y-auto">
+                <p className="font-mono text-sm text-destructive leading-relaxed">{executionError}</p>
+              </div>
+            ) : executionResult ? (
+              <div className="flex-1 min-h-0">
+                <OutputView
+                  results={executionResult}
+                  outputSchema={compiledResult.output_schema}
+                  example={example}
+                  // visualizationConfig intentionally omitted here; Execute tab shows JSON by default unless example overrides.
+                />
+              </div>
+            ) : (
+              <div className="flex-1 min-h-0 flex items-center justify-center border-2 border-dashed rounded-md bg-muted/20">
                 <div className="text-center text-muted-foreground space-y-2">
                   <div className="text-4xl">⚡</div>
                   <p className="text-sm font-medium">
@@ -158,11 +138,11 @@ export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function Ex
                     <kbd className="px-2 py-1 text-xs font-mono bg-muted rounded">⌘↵</kbd>
                   </p>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              </div>
+            )}
+          </TabsContent>
         </div>
-      </div>
+      </Tabs>
     </div>
   );
 });
