@@ -12,10 +12,10 @@ function CompiledCodeViewComponent({ result }: CompiledCodeViewProps) {
   return (
     <div className="h-full flex flex-col min-h-0">
       <Tabs defaultValue="js" className="flex-1 min-h-0 flex flex-col">
-        <TabsList>
-          <TabsTrigger value="js">JavaScript</TabsTrigger>
-          <TabsTrigger value="ruby">Ruby</TabsTrigger>
-          <TabsTrigger value="lir">LIR</TabsTrigger>
+        <TabsList className="w-full justify-start gap-1 bg-transparent border-0 p-0">
+          <TabsTrigger value="js" className="flex-1">JavaScript</TabsTrigger>
+          <TabsTrigger value="ruby" className="flex-1">Ruby</TabsTrigger>
+          <TabsTrigger value="lir" className="flex-1">LIR</TabsTrigger>
         </TabsList>
 
         <TabsContent value="js" className="flex-1 min-h-0 m-0">

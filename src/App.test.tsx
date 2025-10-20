@@ -30,10 +30,21 @@ describe('App', () => {
     render(<App />);
 
     const schemaTabs = screen.getAllByRole('tab', { name: /Schema/i });
-    const mainSchemaTab = schemaTabs.find(tab =>
-      tab.textContent?.includes('⌘1')
-    );
+    const mainSchemaTab = schemaTabs[0];
     expect(mainSchemaTab).toHaveAttribute('data-state', 'active');
+  });
+
+  test('active tab has top-left border highlight', () => {
+    render(<App />);
+
+    const schemaTabs = screen.getAllByRole('tab', { name: /Schema/i });
+    const mainSchemaTab = schemaTabs[0];
+    expect(mainSchemaTab).toHaveAttribute('data-state', 'active');
+    const classString = mainSchemaTab.className;
+    expect(classString).toContain('data-[state=active]:border-t-2');
+    expect(classString).toContain('data-[state=active]:border-l-2');
+    expect(classString).toContain('data-[state=active]:border-t-primary');
+    expect(classString).toContain('data-[state=active]:border-l-primary');
   });
 
   test('Compile button is present in Schema tab', () => {
@@ -66,7 +77,7 @@ describe('App', () => {
     });
   });
 
-  test('shows Run action bar when on Codegen tab', async () => {
+  test('shows Execute action bar when on Codegen tab without visualization', async () => {
     const mockResult = {
       artifact_url: 'https://example.com/artifact.js',
       js_src: 'function _next_state() {}',
@@ -74,7 +85,7 @@ describe('App', () => {
       lir: 'next_state: () -> int',
       schema_hash: 'abc123',
       input_form_schema: {},
-      output_schema: { next_state: {} }, // <- ensure Visualize tab enabled for default example
+      output_schema: { next_state: {} },
     };
 
     vi.mocked(compileSchema).mockResolvedValue(mockResult);
@@ -85,8 +96,9 @@ describe('App', () => {
     compileButton.click();
 
     await waitFor(() => {
-      const runButton = screen.getByRole('button', { name: /Visualize/i });
-      expect(runButton).toBeInTheDocument();
+      const executeButton = screen.getByRole('button', { name: /Execute/i });
+      expect(executeButton).toBeInTheDocument();
     });
   });
+
 });

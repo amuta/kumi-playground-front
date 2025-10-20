@@ -1,9 +1,28 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Code, Eye } from 'lucide-react';
+import { Play, Pause, Code, Eye, LucideIcon } from 'lucide-react';
+
+type ActionType = 'compile' | 'execute' | 'run' | 'visualize' | 'play' | 'pause' | 'call' | 'changeInputs';
+
+interface ActionConfig {
+  icon: LucideIcon;
+  label: string;
+  loadingText: string;
+}
+
+const ACTION_CONFIG: Record<ActionType, ActionConfig> = {
+  compile: { icon: Code, label: 'Compile', loadingText: 'Compiling…' },
+  execute: { icon: Play, label: 'Execute', loadingText: 'Executing…' },
+  run: { icon: Play, label: 'Run', loadingText: 'Executing…' },
+  call: { icon: Play, label: 'Call', loadingText: 'Executing…' },
+  changeInputs: { icon: Play, label: 'Change Inputs', loadingText: 'Executing…' },
+  visualize: { icon: Eye, label: 'Visualize', loadingText: 'Executing…' },
+  play: { icon: Play, label: 'Play', loadingText: 'Executing…' },
+  pause: { icon: Pause, label: 'Pause', loadingText: 'Executing…' },
+};
 
 interface StickyActionBarProps {
-  action: 'compile' | 'execute' | 'run' | 'visualize' | 'play' | 'pause';
+  action: ActionType;
   onAction: () => void;
   disabled?: boolean;
   isLoading?: boolean;
@@ -19,14 +38,9 @@ export function StickyActionBar({
   disabled,
   isLoading,
 }: StickyActionBarProps) {
-  const isCompile = action === 'compile';
-  const isRun = action === 'run';
-  const isExecute = action === 'execute';
-  const isVisualize = action === 'visualize';
-  const isPlay = action === 'play';
-  const isPause = action === 'pause';
-
   const [showLoading, setShowLoading] = useState(false);
+  const config = ACTION_CONFIG[action];
+  const Icon = config.icon;
 
   useEffect(() => {
     let t: ReturnType<typeof setTimeout> | undefined;
@@ -40,10 +54,6 @@ export function StickyActionBar({
     []
   );
 
-  const handleClick = () => {
-    onAction();
-  };
-
   const baseBtn =
     'shadow-2xl hover:shadow-primary/20 transition-transform hover:scale-105 focus-ring gap-3 font-semibold';
   const loadingSpinner =
@@ -55,7 +65,7 @@ export function StickyActionBar({
       style={{ bottom: bottomOffset, padding: '0 1rem 1rem 1rem' }}
     >
       <Button
-        onClick={handleClick}
+        onClick={onAction}
         disabled={disabled}
         size="lg"
         className={baseBtn}
@@ -71,22 +81,12 @@ export function StickyActionBar({
         {showLoading ? (
           <>
             <div className={loadingSpinner} />
-            {isCompile ? 'Compiling…' : 'Executing…'}
+            {config.loadingText}
           </>
         ) : (
           <>
-            {isCompile && <Code className="h-8 w-8" />}
-            {isRun && <Play className="h-8 w-8" />}
-            {isExecute && <Play className="h-8 w-8" />}
-            {isVisualize && <Eye className="h-8 w-8" />}
-            {isPlay && <Play className="h-8 w-8" />}
-            {isPause && <Pause className="h-8 w-8" />}
-            {isCompile && <span>Compile</span>}
-            {isRun && <span>Run</span>}
-            {isExecute && <span>Execute</span>}
-            {isVisualize && <span>Visualize</span>}
-            {isPlay && <span>Play</span>}
-            {isPause && <span>Pause</span>}
+            <Icon className="h-8 w-8" />
+            <span>{config.label}</span>
             <kbd className="px-3 py-2 text-sm font-mono bg-primary-foreground/20 rounded">
               [Ctrl]+[Enter]
             </kbd>

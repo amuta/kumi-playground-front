@@ -17,6 +17,8 @@ interface ExecuteTabProps {
   onExecuteEnd?: () => void;
   hideInput?: boolean;
   onActiveSubTabChange?: (tab: 'input' | 'output') => void;
+  activeSubTab?: 'input' | 'output';
+  onSetActiveSubTab?: (tab: 'input' | 'output') => void;
 }
 
 export interface ExecuteTabRef {
@@ -43,7 +45,7 @@ function deriveDefaultInput(example?: Example): Record<string, any> {
 }
 
 export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function ExecuteTab(
-  { compiledResult, example, executionConfig, onExecuteStart, onExecuteEnd, hideInput = false, onActiveSubTabChange },
+  { compiledResult, example, executionConfig, onExecuteStart, onExecuteEnd, hideInput = false, onActiveSubTabChange, activeSubTab: externalActiveSubTab, onSetActiveSubTab },
   ref
 ) {
   const [inputValues, setInputValues] = useState<Record<string, any>>({});
@@ -51,7 +53,10 @@ export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function Ex
   const [executionError, setExecutionError] = useState<string | null>(null);
   const [isExecuting, setIsExecuting] = useState(false);
   const [jsonError, setJsonError] = useState<string | null>(null);
-  const [activeSubTab, setActiveSubTab] = useState<'input' | 'output'>('input');
+  const [internalActiveSubTab, setInternalActiveSubTab] = useState<'input' | 'output'>('input');
+
+  const activeSubTab = externalActiveSubTab ?? internalActiveSubTab;
+  const setActiveSubTab = onSetActiveSubTab ?? setInternalActiveSubTab;
 
   useEffect(() => {
     onActiveSubTabChange?.(activeSubTab);

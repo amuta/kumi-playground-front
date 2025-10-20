@@ -4,3 +4,4 @@ dist
 *.log
 coverage
 NEXT_STEPS.md
+PLAN*.md

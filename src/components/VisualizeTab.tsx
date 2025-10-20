@@ -34,7 +34,6 @@ export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(funct
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [stepCount, setStepCount] = useState(0);
-  const [engineType, setEngineType] = useState<'worker' | 'main' | null>(null);
   const [actualSps, setActualSps] = useState(0);
 
   // refs for live SPS estimate (EWMA)
@@ -100,7 +99,6 @@ export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(funct
       setOutputs(null);
       setIsPlaying(false);
       setStepCount(0);
-      setEngineType(null);
       setActualSps(0);
       lastTsRef.current = null;
       lastStepRef.current = 0;
@@ -159,11 +157,9 @@ export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(funct
             step: () => new Promise((resolve) => { waiters.push(() => resolve(last)); w.postMessage({ type: 'step' }); }),
             __terminate: () => w.terminate(),
           };
-          setEngineType('worker');
         } else {
           const mod = await loadArtifactModule(url);
           engine = new VisualizationEngine({ mod, outputSchema: schema, execConfig: executionConfig, initialInput });
-          setEngineType('main');
         }
 
         if (cancelled) { engine?.__terminate?.(); return; }
@@ -221,14 +217,9 @@ export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(funct
             <div className="flex items-center justify-between mb-4 shrink-0">
               <div className="text-sm text-muted-foreground">
                 {enabled ? (isPlaying ? 'Playing' : 'Paused') : 'Visualization disabled'}
-                {engineType && (
-                  <span className="ml-3 inline-flex items-center rounded px-2 py-0.5 text-xs border border-border bg-muted/40">
-                    {engineType === 'worker' ? 'Worker' : 'Main thread'}
-                  </span>
-                )}
               </div>
               <div className="text-xs text-muted-foreground">
-                Step: {stepCount} • Speed: {Math.round(actualSps)} / {maxStepsPerSec} steps/s
+                Step: {stepCount} • {Math.round(actualSps)} steps/s
               </div>
             </div>
 
