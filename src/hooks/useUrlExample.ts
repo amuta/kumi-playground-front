@@ -28,6 +28,16 @@ export function useUrlExample(
   }, []);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const exampleId = params.get('example');
+
+    if (!exampleId || !availableExamples.find((ex) => ex.id === exampleId)) {
+      params.set('example', currentExample.id);
+      window.history.replaceState({}, '', `?${params.toString()}`);
+    }
+  }, []);
+
+  useEffect(() => {
     const handlePopstate = () => {
       const params = new URLSearchParams(window.location.search);
       const exampleId = params.get('example');

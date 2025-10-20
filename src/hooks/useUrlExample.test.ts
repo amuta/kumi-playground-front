@@ -96,4 +96,20 @@ describe('useUrlExample', () => {
 
     expect(result.current[0].id).toBe(example1.id);
   });
+
+  test('updates URL on initial mount with default example', () => {
+    window.history.replaceState({}, '', '');
+
+    renderHook(() => useUrlExample(examples));
+
+    expect(window.location.search).toBe('?example=arithmetic');
+  });
+
+  test('updates URL on initial mount when query param specified', () => {
+    window.history.replaceState({}, '', '?example=game-of-life');
+
+    renderHook(() => useUrlExample(examples));
+
+    expect(window.location.search).toBe('?example=game-of-life');
+  });
 });
