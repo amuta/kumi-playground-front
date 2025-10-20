@@ -31,11 +31,12 @@ export const SEVERITY = {
 export function toDiagnostics(error: CompilationError): Diagnostic[] {
   const line = error.line ?? 1;
   const column = error.column ?? 1;
-  const endColumn = calculateEndColumn(error.message, column);
+  const cleanMessage = cleanErrorMessage(error.message);
+  const endColumn = calculateEndColumn(cleanMessage, column);
 
   return [
     {
-      message: error.message,
+      message: cleanMessage,
       severity: SEVERITY.Error,
       startLineNumber: line,
       startColumn: column,
@@ -43,6 +44,15 @@ export function toDiagnostics(error: CompilationError): Diagnostic[] {
       endColumn,
     },
   ];
+}
+
+/**
+ * Clean error message by removing file location prefix
+ * Converts "schema:4:13: Parse error" to just "Parse error"
+ */
+function cleanErrorMessage(message: string): string {
+  // Strip "file:line:column: " prefix if present
+  return message.replace(/^\S+:\d+:\d+:\s+/, '');
 }
 
 /**

@@ -82,7 +82,7 @@ export const SchemaEditor = forwardRef<SchemaEditorRef, SchemaEditorProps>(({
 
       if (error instanceof CompilationError) {
         errorInfo = {
-          message: error.message,
+          message: error.error_text || error.message,
           line: error.line,
           column: error.column
         };

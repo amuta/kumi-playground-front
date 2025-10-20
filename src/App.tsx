@@ -201,9 +201,13 @@ export function App() {
 
               {compileError && activeTab === 'schema' && (
                 <div className="absolute bottom-0 left-0 right-0 p-4 bg-red-100 border-t-2 border-red-500 text-red-800 font-mono text-sm z-50">
-                  <div>Error: {compileError}</div>
+                  <div className="mb-2 font-bold">
+                    {compileError}
+                  </div>
                   {errorLine && errorColumn && (
-                    <div>Location: line {errorLine}, column {errorColumn}</div>
+                    <div className="text-xs opacity-75">
+                      Location: line {errorLine}, column {errorColumn}
+                    </div>
                   )}
                 </div>
               )}

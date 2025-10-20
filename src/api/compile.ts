@@ -4,6 +4,7 @@ export type CompileResponse = CompileResult;
 
 export interface CompileError {
   message: string;
+  error_text?: string;
   line?: number;
   column?: number;
 }
@@ -11,12 +12,14 @@ export interface CompileError {
 export class CompilationError extends Error {
   line?: number;
   column?: number;
+  error_text?: string;
 
   constructor(error: CompileError) {
     super(error.message);
     this.name = 'CompilationError';
     this.line = error.line;
     this.column = error.column;
+    this.error_text = error.error_text;
   }
 }
 
