@@ -15,7 +15,7 @@ describe('VisualizationEngine', () => {
     });
 
     const s1 = engine.step();
-    expect(s1.outputs).toEqual({ sum: 5, next_state: [[1]] });
+    expect(s1.outputs).toEqual({ sum: 5, next_state: [[1]], step: 1 });
     expect(s1.stepCount).toBe(1);
   });
 

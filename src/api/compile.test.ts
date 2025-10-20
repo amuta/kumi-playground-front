@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { compileKumiSchema, CompilationError } from './compile';
+import { compileKumiSchema, CompilationError, ServerError } from './compile';
 import type { CompileResult } from '../types';
 
 describe('compileKumiSchema', () => {
@@ -162,7 +162,7 @@ describe('compileKumiSchema', () => {
       }
     });
 
-    it('throws CompilationError without line/column for errors without location', async () => {
+    it('throws ServerError for errors without location', async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: false,
         headers: { get: () => 'application/json' },
@@ -178,10 +178,8 @@ describe('compileKumiSchema', () => {
         await compileKumiSchema('some schema');
         expect.fail('Should have thrown an error');
       } catch (error) {
-        expect(error).toBeInstanceOf(CompilationError);
-        expect((error as CompilationError).message).toBe('Internal compiler error');
-        expect((error as CompilationError).line).toBeUndefined();
-        expect((error as CompilationError).column).toBeUndefined();
+        expect(error).toBeInstanceOf(ServerError);
+        expect((error as ServerError).message).toBe('Internal compiler error');
       }
     });
 

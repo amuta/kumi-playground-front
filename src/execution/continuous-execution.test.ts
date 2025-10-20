@@ -71,11 +71,14 @@ describe('executeIterationLoop', () => {
     );
 
     expect(history).toHaveLength(3);
-    expect(history[0].input).toEqual({ count: 0 });
+    expect(history[0].input).toEqual({ count: 0, step: 1 });
     expect(history[0].outputs.next_count).toBe(1);
-    expect(history[1].input).toEqual({ count: 1 });
+    expect(history[0].outputs.step).toBe(1);
+    expect(history[1].input).toEqual({ count: 1, step: 2 });
     expect(history[1].outputs.next_count).toBe(2);
-    expect(history[2].input).toEqual({ count: 2 });
+    expect(history[1].outputs.step).toBe(2);
+    expect(history[2].input).toEqual({ count: 2, step: 3 });
     expect(history[2].outputs.next_count).toBe(3);
+    expect(history[2].outputs.step).toBe(3);
   });
 });
