@@ -10,9 +10,10 @@ import { useKeyboard } from '@/hooks/useKeyboard';
 import { VisualizeTab, type VisualizeTabRef } from '@/components/VisualizeTab';
 import { useExampleState } from '@/hooks/useExampleState';
 import { useNavigationAction } from '@/hooks/useNavigationAction';
+import { useUrlExample } from '@/hooks/useUrlExample';
 import type { CompileResponse } from '@/api/compile';
 import type { CompileErrorInfo } from '@/components/SchemaEditor';
-import { examples, getDefaultExample } from '@/examples';
+import { examples } from '@/examples';
 import type { Example, VisualizationType } from '@/types';
 
 function hasVisualization(
@@ -34,7 +35,7 @@ export function App() {
   const schemaTabContainerRef = useRef<SchemaTabContainerRef>(null);
   const executeTabRef = useRef<ExecuteTabRef>(null);
   const visualizeTabRef = useRef<VisualizeTabRef>(null);
-  const [currentExample, setCurrentExample] = useState<Example>(getDefaultExample());
+  const [currentExample, setCurrentExample] = useUrlExample(examples);
 
   useEffect(() => {
     // Suppress Monaco language parsing errors that don't affect functionality
