@@ -87,7 +87,7 @@ export function StickyActionBar({
             {isVisualize && <span>Visualize</span>}
             {isPlay && <span>Play</span>}
             {isPause && <span>Pause</span>}
-            <kbd className="hidden sm:inline-block px-3 py-2 text-sm font-mono bg-primary-foreground/20 rounded">
+            <kbd className="px-3 py-2 text-sm font-mono bg-primary-foreground/20 rounded">
               [Ctrl]+[Enter]
             </kbd>
           </>

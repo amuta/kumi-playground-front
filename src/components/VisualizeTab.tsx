@@ -235,17 +235,15 @@ export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(funct
             {!enabled ? (
               <div className="flex-1 min-h-0 grid place-items-center text-muted-foreground text-center px-8">
                 <div>
-                  <p className="text-sm">
-                    Visualization not enabled for this schema. Add a non-JSON visualization via
-                    <code className="mx-1 px-1 py-0.5 bg-muted rounded">visualization_config</code>
-                    or per-example <code className="px-1 py-0.5 bg-muted rounded">visualizations</code>.
-                  </p>
-                  <p className="text-xs mt-3">
-                    Example:{' '}
-                    <code className="px-1 py-0.5 bg-muted rounded">
-                      {"{ outputs: { next_state: { type: 'grid' } } }"}
-                    </code>
-                  </p>
+                  <div className="text-sm space-y-3">
+                    <p>No visualization configured</p>
+                    <p className="text-xs">
+                      Add via{' '}
+                      <code className="px-1 py-0.5 bg-muted rounded">visualization_config</code>
+                      {' '}or{' '}
+                      <code className="px-1 py-0.5 bg-muted rounded">visualizations</code>
+                    </p>
+                  </div>
                 </div>
               </div>
             ) : error ? (

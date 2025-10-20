@@ -16,6 +16,7 @@ interface ExecuteTabProps {
   onExecuteStart?: () => void;
   onExecuteEnd?: () => void;
   hideInput?: boolean;
+  onActiveSubTabChange?: (tab: 'input' | 'output') => void;
 }
 
 export interface ExecuteTabRef {
@@ -42,7 +43,7 @@ function deriveDefaultInput(example?: Example): Record<string, any> {
 }
 
 export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function ExecuteTab(
-  { compiledResult, example, executionConfig, onExecuteStart, onExecuteEnd, hideInput = false },
+  { compiledResult, example, executionConfig, onExecuteStart, onExecuteEnd, hideInput = false, onActiveSubTabChange },
   ref
 ) {
   const [inputValues, setInputValues] = useState<Record<string, any>>({});
@@ -51,6 +52,10 @@ export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function Ex
   const [isExecuting, setIsExecuting] = useState(false);
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [activeSubTab, setActiveSubTab] = useState<'input' | 'output'>('input');
+
+  useEffect(() => {
+    onActiveSubTabChange?.(activeSubTab);
+  }, [activeSubTab, onActiveSubTabChange]);
 
   // Reset inputs when example or compiled artifact changes
   useEffect(() => {
@@ -62,7 +67,6 @@ export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function Ex
   const handleExecute = async () => {
     setIsExecuting(true);
     setExecutionError(null);
-    setActiveSubTab('output');
     onExecuteStart?.();
     try {
       const results = await runAllOutputsFromUrl(
@@ -71,14 +75,17 @@ export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function Ex
         compiledResult.output_schema
       );
       setExecutionResult(results);
+      setActiveSubTab('output');
 
       if (executionConfig?.type === 'continuous' && executionConfig.continuous?.feedback_mappings?.length) {
         const next = applyFeedbackMappings(executionConfig, results, inputValues);
         setInputValues(next);
+        setActiveSubTab('input');
       }
     } catch (error) {
       setExecutionError(error instanceof Error ? error.message : 'Execution failed');
       setExecutionResult(null);
+      setActiveSubTab('output');
     } finally {
       setIsExecuting(false);
       onExecuteEnd?.();

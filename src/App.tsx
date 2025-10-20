@@ -68,6 +68,7 @@ export function App() {
   const [activeTab, setActiveTab] = useState('schema');
   const [isCompiling, setIsCompiling] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
+  const [executeTabSubTab, setExecuteTabSubTab] = useState<'input' | 'output'>('input');
 
   const canVisualize = useMemo(
     () => hasVisualization(compiledResult, currentExample, visualizationConfig),
@@ -168,10 +169,9 @@ export function App() {
               href="https://github.com/amuta/kumi"
               target="_blank"
               rel="noopener noreferrer"
-              className="gap-1.5 focus-ring text-primary hover:text-primary/70 transition-colors inline-flex items-center text-sm"
+              className="focus-ring text-primary hover:text-primary/70 transition-colors inline-flex items-center"
               title="View on GitHub"
             >
-              <span>Github</span>
               <Github className="h-5 w-5" />
             </a>
           </div>
@@ -183,11 +183,11 @@ export function App() {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full min-h-0 flex flex-col">
             <div className="sticky top-0 z-20 bg-background">
               <TabsList className="grid w-full grid-cols-4 mb-6">
-                <TabsTrigger value="schema" className="gap-3">Schema<kbd className="hidden sm:inline-block ml-auto px-1.5 py-0.5 text-xs font-mono bg-muted rounded">⌘1</kbd></TabsTrigger>
-                <TabsTrigger value="compiled" disabled={!compiledResult} className="gap-3">Codegen<kbd className="hidden sm:inline-block ml-auto px-1.5 py-0.5 text-xs font-mono bg-muted rounded">⌘2</kbd></TabsTrigger>
-                <TabsTrigger value="execute" disabled={!compiledResult} className="gap-3">Execute<kbd className="hidden sm:inline-block ml-auto px-1.5 py-0.5 text-xs font-mono bg-muted rounded">⌘3</kbd></TabsTrigger>
+                <TabsTrigger value="schema" className="gap-2 justify-between">Schema<kbd className="hidden sm:inline-block px-1.5 py-0.5 text-xs font-mono bg-muted rounded flex-shrink-0">⌘1</kbd></TabsTrigger>
+                <TabsTrigger value="compiled" disabled={!compiledResult} className="gap-2 justify-between">Codegen<kbd className="hidden sm:inline-block px-1.5 py-0.5 text-xs font-mono bg-muted rounded flex-shrink-0">⌘2</kbd></TabsTrigger>
+                <TabsTrigger value="execute" disabled={!compiledResult} className="gap-2 justify-between">Execute<kbd className="hidden sm:inline-block px-1.5 py-0.5 text-xs font-mono bg-muted rounded flex-shrink-0">⌘3</kbd></TabsTrigger>
                 {/* Keep tab accessible even if no viz configured; content will explain. */}
-                <TabsTrigger value="visualize" disabled={!compiledResult} className="gap-3">Visualize<kbd className="hidden sm:inline-block ml-auto px-1.5 py-0.5 text-xs font-mono bg-muted rounded">⌘4</kbd></TabsTrigger>
+                <TabsTrigger value="visualize" disabled={!compiledResult} className="gap-2 justify-between">Visualize<kbd className="hidden sm:inline-block px-1.5 py-0.5 text-xs font-mono bg-muted rounded flex-shrink-0">⌘4</kbd></TabsTrigger>
               </TabsList>
             </div>
 
@@ -236,6 +236,7 @@ export function App() {
                     }
                     onExecuteStart={() => setIsExecuting(true)}
                     onExecuteEnd={() => setIsExecuting(false)}
+                    onActiveSubTabChange={setExecuteTabSubTab}
                   />
                 )}
               </TabsContent>
@@ -274,7 +275,7 @@ export function App() {
         />
       )}
 
-      {activeTab === 'execute' && compiledResult && (
+      {activeTab === 'execute' && compiledResult && executeTabSubTab === 'input' && (
         <StickyActionBar
           action="execute"
           onAction={() => executeTabRef.current?.execute()}

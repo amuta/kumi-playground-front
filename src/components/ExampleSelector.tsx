@@ -30,7 +30,7 @@ export function ExampleSelector({
       <span className="text-base font-medium text-muted-foreground whitespace-nowrap hidden sm:inline">Examples:</span>
       <span className="text-sm font-medium text-muted-foreground sm:hidden">Ex:</span>
       <Select value={currentExample.id} onValueChange={handleValueChange}>
-        <SelectTrigger className="w-auto sm:w-[240px] border-2 border-primary bg-accent text-accent-foreground hover:bg-accent/90 transition-all font-medium text-sm sm:text-base px-3 py-2" title="Change to explore different examples">
+        <SelectTrigger className="w-auto sm:w-[240px] max-w-[70vw] sm:max-w-none border-2 border-primary bg-accent text-accent-foreground hover:bg-accent/90 transition-all font-medium text-sm sm:text-base px-3 py-2" title="Change to explore different examples">
           <SelectValue placeholder="Select an example" />
         </SelectTrigger>
         <SelectContent>
