@@ -13,6 +13,7 @@ export type CompileResult = {
   js_src: string;
   ruby_src: string;
   lir: string;
+  snast?: string;
   schema_hash: string;
   input_form_schema: Record<string, InputField>;
   output_schema: Record<string, OutputField>;

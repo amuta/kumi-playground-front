@@ -3,6 +3,7 @@ import { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { JsonInputEditor } from '@/components/JsonInputEditor';
 import { OutputView } from '@/components/OutputView';
+import { ErrorNotification } from '@/components/ui/ErrorNotification';
 import { runAllOutputsFromUrl } from '@/execution/artifact-runner';
 import { applyFeedbackMappings } from '@/execution/feedback-loop';
 import type { CompileResponse } from '@/api/compile';
@@ -77,7 +78,8 @@ export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function Ex
       const results = await runAllOutputsFromUrl(
         compiledResult.artifact_url!,
         inputValues,
-        compiledResult.output_schema
+        compiledResult.output_schema,
+        compiledResult.input_form_schema
       );
       setExecutionResult(results);
       setActiveSubTab('output');
@@ -90,7 +92,6 @@ export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function Ex
     } catch (error) {
       setExecutionError(error instanceof Error ? error.message : 'Execution failed');
       setExecutionResult(null);
-      setActiveSubTab('output');
     } finally {
       setIsExecuting(false);
       onExecuteEnd?.();
@@ -102,7 +103,7 @@ export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function Ex
   const isContinuous = executionConfig?.type === 'continuous' && !!executionConfig.continuous?.feedback_mappings?.length;
 
   return (
-    <div className="h-[calc(100vh-4rem)] min-h-0 p-6 flex flex-col">
+    <div className="h-[calc(100vh-4rem)] min-h-0 p-6 flex flex-col relative">
       <Tabs value={activeSubTab} onValueChange={(v) => setActiveSubTab(v as 'input' | 'output')} className="h-full min-h-0 flex flex-col">
         <TabsList className="grid w-full grid-cols-2 mb-4">
           {!hideInput && <TabsTrigger value="input">Input</TabsTrigger>}
@@ -126,11 +127,7 @@ export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function Ex
               </p>
             )}
 
-            {executionError ? (
-              <div className="flex-1 min-h-0 bg-destructive/10 border-2 border-destructive rounded-md shadow-sm p-6 overflow-y-auto">
-                <p className="font-mono text-sm text-destructive leading-relaxed">{executionError}</p>
-              </div>
-            ) : executionResult ? (
+            {executionResult ? (
               <div className="flex-1 min-h-0">
                 <OutputView
                   results={executionResult}
@@ -155,6 +152,14 @@ export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function Ex
           </TabsContent>
         </div>
       </Tabs>
+
+      {executionError && (
+        <ErrorNotification
+          message={executionError}
+          onClose={() => setExecutionError(null)}
+          position="top"
+        />
+      )}
     </div>
   );
 });

@@ -16,6 +16,7 @@ function CompiledCodeViewComponent({ result }: CompiledCodeViewProps) {
           <TabsTrigger value="js" className="flex-1">JavaScript</TabsTrigger>
           <TabsTrigger value="ruby" className="flex-1">Ruby</TabsTrigger>
           <TabsTrigger value="lir" className="flex-1">LIR</TabsTrigger>
+          <TabsTrigger value="snast" className="flex-1">SNAST</TabsTrigger>
         </TabsList>
 
         <TabsContent value="js" className="flex-1 min-h-0 m-0">
@@ -48,6 +49,18 @@ function CompiledCodeViewComponent({ result }: CompiledCodeViewProps) {
               height="100%"
               language="plaintext"
               value={result.lir}
+              readOnly
+              options={{ scrollbar: { vertical: 'hidden', horizontal: 'auto' } }}
+            />
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="snast" className="flex-1 min-h-0 m-0">
+          <Card className="overflow-hidden h-full">
+            <EditorView
+              height="100%"
+              language="plaintext"
+              value={result.snast || ''}
               readOnly
               options={{ scrollbar: { vertical: 'hidden', horizontal: 'auto' } }}
             />

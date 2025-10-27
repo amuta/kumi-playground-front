@@ -1,7 +1,7 @@
 // COPY-AND-REPLACE: ./src/components/SchemaTabContainer.tsx
-import { useState, forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
+import { useState, forwardRef, useImperativeHandle, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { X } from 'lucide-react';
+import { ErrorNotification } from '@/components/ui/ErrorNotification';
 import { SchemaEditor, type SchemaEditorRef, type CompileErrorInfo } from '@/components/SchemaEditor';
 import { ConfigEditor } from '@/components/ConfigEditor';
 import type { CompileResponse } from '@/api/compile';
@@ -47,33 +47,16 @@ export const SchemaTabContainer = forwardRef<SchemaTabContainerRef, SchemaTabCon
     const [schemaSubTab, setSchemaSubTab] = useState('schema');
     const schemaEditorRef = useRef<SchemaEditorRef>(null);
     const [localError, setLocalError] = useState<CompileErrorInfo | null>(null);
-    const errorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const handleCompileSuccess = (result: CompileResponse) => {
       setLocalError(null);
-      if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
       onCompileSuccess(result);
     };
 
     const handleCompileError = (error: CompileErrorInfo) => {
       setLocalError(error);
-      if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
-      errorTimeoutRef.current = setTimeout(() => {
-        setLocalError(null);
-      }, 5000);
       onCompileError(error);
     };
-
-    const closeError = () => {
-      setLocalError(null);
-      if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
-    };
-
-    useEffect(() => {
-      return () => {
-        if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
-      };
-    }, []);
 
     useImperativeHandle(ref, () => ({
       compile: async () => { await schemaEditorRef.current?.compile(); },
@@ -114,34 +97,11 @@ export const SchemaTabContainer = forwardRef<SchemaTabContainerRef, SchemaTabCon
         </Tabs>
 
         {localError && (
-          <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 max-w-md px-4 pointer-events-none">
-            <div
-              className="px-6 py-4 border-2 border-amber-700 rounded-lg shadow-xl flex items-start gap-4 pointer-events-auto"
-              style={{
-                backgroundColor: 'rgba(78, 40, 8, 0.85)',
-                backdropFilter: 'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)'
-              }}
-            >
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-amber-100 font-mono leading-relaxed">
-                  {localError.message}
-                  {localError.line && localError.column && ` (line ${localError.line}, column ${localError.column})`}
-                </p>
-              </div>
-              <div
-                onClick={closeError}
-                className="flex-shrink-0 cursor-pointer text-amber-100 hover:text-amber-50 transition-colors flex items-center justify-center"
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') closeError();
-                }}
-              >
-                <X className="h-4 w-4" />
-              </div>
-            </div>
-          </div>
+          <ErrorNotification
+            message={`${localError.message}${localError.line && localError.column ? ` (line ${localError.line}, column ${localError.column})` : ''}`}
+            onClose={() => setLocalError(null)}
+            position="top"
+          />
         )}
       </div>
     );

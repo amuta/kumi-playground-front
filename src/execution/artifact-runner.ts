@@ -1,5 +1,6 @@
 // Artifact runner: loads compiled JS by URL and runs outputs.
-import type { OutputField } from '@/types';
+import type { OutputField, InputField } from '@/types';
+import { validateInputData } from '@/validation/validate';
 
 function toBase64(s: string){
   // btoa in browser, Buffer in Node/Vitest
@@ -42,7 +43,15 @@ export function runAllOutputs(mod: any, input: Record<string,any>, schema: Recor
   return out;
 }
 
-export async function runAllOutputsFromUrl(url: string, input: Record<string,any>, schema: Record<string,OutputField>){
+export async function runAllOutputsFromUrl(url: string, input: Record<string,any>, schema: Record<string,OutputField>, inputSchema?: Record<string, InputField>){
   const mod = await loadArtifactModule(url);
+
+  if (inputSchema) {
+    const errorCollector = validateInputData(input, inputSchema);
+    if (errorCollector.hasErrors()) {
+      throw new Error(errorCollector.formatErrors());
+    }
+  }
+
   return runAllOutputs(mod, input, schema);
 }
