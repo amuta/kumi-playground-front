@@ -200,7 +200,7 @@ export function App() {
               </TabsContent>
 
               {compileError && activeTab === 'schema' && (
-                <div className="absolute bottom-0 left-0 right-0 p-4 bg-red-100 border-t-2 border-red-500 text-red-800 font-mono text-sm z-50">
+                <div className="absolute bottom-0 left-0 right-0 p-4 bg-destructive/10 border-t-2 border-destructive text-destructive-foreground font-mono text-sm z-50">
                   <div className="mb-2 font-bold">
                     {compileError}
                   </div>
