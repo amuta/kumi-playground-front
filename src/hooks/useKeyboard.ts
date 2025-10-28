@@ -55,8 +55,9 @@ export function useKeyboard(keyMap: KeyMap, deps: unknown[] = []) {
 
       event.preventDefault();
       event.stopPropagation();
-      // @ts-ignore
-      if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+      if (typeof event.stopImmediatePropagation === 'function') {
+        event.stopImmediatePropagation();
+      }
 
       action(event);
     };

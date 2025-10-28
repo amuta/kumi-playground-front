@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "lint": "eslint \"src/**/*.{ts,tsx,js,jsx}\"",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "preview": "vite preview"

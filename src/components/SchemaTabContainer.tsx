@@ -107,3 +107,5 @@ export const SchemaTabContainer = forwardRef<SchemaTabContainerRef, SchemaTabCon
     );
   }
 );
+
+SchemaTabContainer.displayName = 'SchemaTabContainer';

@@ -64,10 +64,11 @@ export function InputForm({ schema, values, onChange }: InputFormProps) {
           );
 
         case 'array':
-        case 'object':
-          const currentText = name in textValues
-            ? textValues[name]
-            : (values[name] !== undefined ? JSON.stringify(values[name], null, 2) : '');
+        case 'object': {
+          const currentText =
+            name in textValues
+              ? textValues[name]
+              : (values[name] !== undefined ? JSON.stringify(values[name], null, 2) : '');
 
           return (
             <textarea
@@ -90,6 +91,7 @@ export function InputForm({ schema, values, onChange }: InputFormProps) {
               rows={6}
             />
           );
+        }
 
         default:
           return (

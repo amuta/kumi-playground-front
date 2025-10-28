@@ -65,7 +65,9 @@ export function registerKumiLanguage(monaco: Monaco): void {
         [/\s+/, 'white'],
 
         // Delimiters
-        [/[{}()\[\].]/, 'delimiter'],
+        [/[{}().]/, 'delimiter'],
+        [/\[/, 'delimiter'],
+        [/\]/, 'delimiter'],
       ],
     },
   } as any);

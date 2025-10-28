@@ -134,3 +134,5 @@ export const SchemaEditor = forwardRef<SchemaEditorRef, SchemaEditorProps>(({
     </div>
   );
 });
+
+SchemaEditor.displayName = 'SchemaEditor';

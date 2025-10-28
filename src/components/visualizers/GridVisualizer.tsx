@@ -72,8 +72,11 @@ export function GridVisualizer({ name, value }: GridVisualizerProps) {
     };
 
     function mixGray(bgColor: string, fgColor: string, t: number) {
-      // @ts-ignore
-      if (CSS && CSS.supports && CSS.supports('color', 'color-mix(in oklab, black, white)')) {
+      if (
+        typeof CSS !== 'undefined' &&
+        typeof CSS.supports === 'function' &&
+        CSS.supports('color', 'color-mix(in oklab, black, white)')
+      ) {
         return `color-mix(in oklab, ${fgColor} ${Math.round(t * 100)}%, ${bgColor})`;
         }
       const g = Math.round(t * 255);

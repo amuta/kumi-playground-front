@@ -103,6 +103,12 @@ UI surfaces `errors[0]` or `Compilation failed`.
 * ExecuteTab control rendering for `continuous`.
 * Visualizer precedence + `cell_map`.
 
+## Styling & Design Tokens
+
+- Colors live in `src/index.css` as OKLCH design tokens (e.g. `--primary`, `--card`), surfaced through Tailwind aliases such as `bg-primary` and `text-muted-foreground`.
+- ESLint guards against default Tailwind palette classes (`bg-red-500`, `text-white`, etc.); use the design tokens or add new ones instead.
+- If you need a new semantic color, extend the token set first so the entire UI stays consistent in both themes.
+
 ## Known Requirements
 
 * **CORS**: artifact must allow cross-origin fetch.

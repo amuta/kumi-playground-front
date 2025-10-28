@@ -4,8 +4,16 @@ import { validateInputData } from '@/validation/validate';
 
 function toBase64(s: string){
   // btoa in browser, Buffer in Node/Vitest
-  // @ts-ignore
-  return typeof btoa === 'function' ? btoa(s) : Buffer.from(s,'utf8').toString('base64');
+  if (typeof globalThis.btoa === 'function') {
+    return globalThis.btoa(s);
+  }
+
+  const maybeBuffer = (globalThis as { Buffer?: typeof import('buffer').Buffer }).Buffer;
+  if (maybeBuffer) {
+    return maybeBuffer.from(s, 'utf8').toString('base64');
+  }
+
+  throw new Error('No base64 encoder available for artifact data.');
 }
 
 const moduleCache = new Map<string, Promise<any>>();
