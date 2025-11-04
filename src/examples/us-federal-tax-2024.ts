@@ -3,7 +3,7 @@ import type { Example } from '@/types';
 
 export const usFederalTax2024: Example = {
   id: 'us-federal-tax-2024',
-  title: 'U.S. Federal + FICA (2024, data-driven)',
+  title: 'US Tax 2024',
   mode: 'notebook',
   schema_src: `schema do
   input do

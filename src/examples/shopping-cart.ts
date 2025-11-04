@@ -2,7 +2,7 @@ import type { Example } from '@/types';
 
 export const shoppingCart: Example = {
   id: 'shopping-cart',
-  title: 'Shopping Cart',
+  title: 'Cart',
   mode: 'notebook',
   schema_src: `schema do
   input do

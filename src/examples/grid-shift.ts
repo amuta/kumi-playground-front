@@ -2,7 +2,7 @@ import type { Example } from '@/types';
 
 export const gridShift: Example = {
   id: 'grid-shift',
-  title: '2D Grid Shift',
+  title: 'Grid Shift',
   mode: 'notebook',
   schema_src: `schema do
   input do

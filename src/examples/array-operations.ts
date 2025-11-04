@@ -2,7 +2,7 @@ import type { Example } from '@/types';
 
 export const arrayOperations: Example = {
   id: 'array-operations',
-  title: 'Array Operations',
+  title: 'Arrays',
   mode: 'notebook',
   schema_src: `schema do
   input do

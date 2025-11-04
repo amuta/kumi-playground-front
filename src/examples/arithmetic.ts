@@ -2,7 +2,7 @@ import type { Example } from '@/types';
 
 export const arithmetic: Example = {
   id: 'arithmetic',
-  title: 'Basic Arithmetic',
+  title: 'Arithmetic',
   mode: 'notebook',
   schema_src: `schema do
   input do

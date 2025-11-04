@@ -2,7 +2,7 @@ import type { Example } from '@/types';
 
 export const nestedHash: Example = {
   id: 'nested-hash',
-  title: 'Nested Hash Access',
+  title: 'Nested Hash',
   mode: 'notebook',
   schema_src: `schema do
   input do

@@ -2,7 +2,7 @@ import type { Example } from '@/types';
 
 export const gameOfLife: Example = {
   id: 'game-of-life',
-  title: "Conway's Game of Life",
+  title: 'Game of Life',
   mode: 'notebook',
   schema_src: `schema do
   input do

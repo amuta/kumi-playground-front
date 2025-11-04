@@ -2,7 +2,7 @@ import type { Example } from '@/types';
 
 export const tupleFunctions: Example = {
   id: 'tuple-functions',
-  title: 'Tuple Functions',
+  title: 'Tuples',
   mode: 'notebook',
   schema_src: `schema do
   input do
