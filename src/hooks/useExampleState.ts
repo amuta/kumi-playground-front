@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import type { Example, ExecutionConfig, VisualizationConfig, CanvasConfig } from '@/types';
+import type { Example, ExecutionConfig, VisualizationConfig, CanvasConfig, SimulationConfig } from '@/types';
 import type { CompileResponse } from '@/api/compile';
 
 interface ExampleState {
@@ -8,11 +8,14 @@ interface ExampleState {
   executionConfig: ExecutionConfig;
   visualizationConfig: VisualizationConfig;
   canvasConfig: CanvasConfig;
+  simulationConfig: SimulationConfig | null;
 }
 
 export function useExampleState(example: Example) {
   const stateCache = useRef<Record<string, ExampleState>>({});
   const currentExampleId = useRef<string>(example.id);
+
+  const deepClone = <T,>(value: T): T => (value ? JSON.parse(JSON.stringify(value)) : value);
 
   const getInitialState = (ex: Example): ExampleState => {
     if (stateCache.current[ex.id]) return stateCache.current[ex.id];
@@ -22,6 +25,7 @@ export function useExampleState(example: Example) {
       executionConfig: ex.execution_config || { type: 'single' },
       visualizationConfig: ex.visualization_config || { outputs: {} },
       canvasConfig: ex.canvas_config || { render: 'grid2d', controls: {} },
+      simulationConfig: ex.simulation_config ? deepClone(ex.simulation_config) : null,
     };
   };
 
@@ -50,5 +54,7 @@ export function useExampleState(example: Example) {
     setVisualizationConfig: (visualizationConfig: VisualizationConfig) => setState(s => ({ ...s, visualizationConfig })),
     canvasConfig: state.canvasConfig,
     setCanvasConfig: (canvasConfig: CanvasConfig) => setState(s => ({ ...s, canvasConfig })),
+    simulationConfig: state.simulationConfig,
+    setSimulationConfig: (simulationConfig: SimulationConfig | null) => setState(s => ({ ...s, simulationConfig })),
   };
 }

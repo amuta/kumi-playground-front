@@ -52,6 +52,7 @@ export type SimulationConfig = {
     | { distribution: 'normal'; mean: number; std: number }
     | { distribution: 'uniform'; min: number; max: number }>;
   track_outputs: string[];
+  seed?: number;
 };
 
 export type Example = {

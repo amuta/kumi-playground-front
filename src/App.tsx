@@ -49,6 +49,8 @@ export function App() {
     setVisualizationConfig,
     canvasConfig,
     setCanvasConfig,
+    simulationConfig,
+    setSimulationConfig,
   } = useExampleState(currentExample);
 
   const [compileError, setCompileError] = useState<string | null>(null);
@@ -189,9 +191,11 @@ export function App() {
                   executionConfig={executionConfig}
                   visualizationConfig={visualizationConfig}
                   canvasConfig={canvasConfig}
+                  simulationConfig={simulationConfig}
                   onExecutionConfigChange={setExecutionConfig}
                   onVisualizationConfigChange={setVisualizationConfig}
                   onCanvasConfigChange={setCanvasConfig}
+                  onSimulationConfigChange={setSimulationConfig}
                   onCompileSuccess={handleCompileSuccess}
                   onCompileError={handleCompileError}
                   onCompileStart={() => setIsCompiling(true)}
@@ -223,6 +227,7 @@ export function App() {
                     compiledResult={compiledResult}
                     example={currentExample}
                     executionConfig={executionConfig}
+                    simulationConfig={simulationConfig ?? undefined}
                     hideInput={
                       executionConfig?.type === 'continuous' &&
                       !!executionConfig.continuous?.feedback_mappings?.length
@@ -244,6 +249,7 @@ export function App() {
                     example={currentExample}
                     visualizationConfig={visualizationConfig}
                     executionConfig={executionConfig}
+                    simulationConfig={simulationConfig ?? undefined}
                     enabled={canVisualize}
                     canvasConfig={canvasConfig}
                   />

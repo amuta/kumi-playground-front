@@ -9,12 +9,14 @@ import { gameOfLife } from './game-of-life';
 import { diamondWave } from './diamond-wave';
 import { languageIntro } from './language-intro';
 import { usFederalTax2024 } from './us-federal-tax-2024';
+import { monteCarloSimulation } from './monte-carlo-simulation';
 
 export const examples: Example[] = [
   languageIntro,
   usFederalTax2024,
   gameOfLife,
   diamondWave,
+  monteCarloSimulation,
   arithmetic,
   shoppingCart,
   arrayOperations,

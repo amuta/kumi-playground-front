@@ -6,7 +6,8 @@ import { VisualizationEngine } from '@/visualization/engine';
 import { loadArtifactModule } from '@/execution/artifact-runner';
 import type { CompileResponse } from '@/api/compile';
 import { makeBinaryGrid } from '@/input-gen/grid';
-import type { Example, VisualizationConfig, ExecutionConfig, CanvasConfig } from '@/types';
+import type { Example, VisualizationConfig, ExecutionConfig, CanvasConfig, SimulationConfig } from '@/types';
+import { generateMonteCarloScenarios } from '@/input-gen/monte-carlo';
 
 interface VisualizeTabProps {
   compiledResult: CompileResponse;
@@ -14,6 +15,7 @@ interface VisualizeTabProps {
   visualizationConfig?: VisualizationConfig;
   executionConfig?: ExecutionConfig;
   canvasConfig?: CanvasConfig;
+  simulationConfig?: SimulationConfig;
   enabled?: boolean;
 }
 
@@ -24,7 +26,7 @@ export interface VisualizeTabRef {
 }
 
 export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(function VisualizeTab(
-  { compiledResult, example, visualizationConfig, executionConfig, canvasConfig, enabled = true },
+  { compiledResult, example, visualizationConfig, executionConfig, canvasConfig, simulationConfig, enabled = true },
   ref
 ) {
   const controllerRef = useRef<VisualizationController | null>(null);
@@ -64,6 +66,7 @@ export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(funct
   }
 
   const effectiveCanvas = canvasConfig ?? example?.canvas_config;
+  const effectiveSimulation = simulationConfig ?? example?.simulation_config;
 
   // Max steps/sec from executionConfig
   const maxStepsPerSec = useMemo(
@@ -88,6 +91,7 @@ export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(funct
     density: effectiveCanvas?.controls?.density?.default,
     seed: effectiveCanvas?.controls?.seed?.default,
   });
+  const simulationSig = JSON.stringify(effectiveSimulation);
 
   // hard rebuild on any change
   useEffect(() => {
@@ -120,10 +124,10 @@ export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(funct
       try {
         tearDown();
 
-        // initial input: use example base_input or generate from canvas_config
+        const baseInput = example?.base_input ? JSON.parse(JSON.stringify(example.base_input)) : undefined;
         const c = effectiveCanvas?.controls;
-        const generated =
-          !example?.base_input && (effectiveCanvas?.render === 'grid2d')
+        const generatedGrid =
+          !baseInput && (effectiveCanvas?.render === 'grid2d')
             ? {
                 rows: makeBinaryGrid(
                   c?.height?.default ?? 40,
@@ -133,7 +137,21 @@ export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(funct
                 ),
               }
             : undefined;
-        const initialInput = example?.base_input ?? generated ?? {};
+
+        let initialInput = baseInput ?? generatedGrid ?? {};
+        if (example?.id === 'monte-carlo-simulation') {
+          const scenarios = initialInput.scenarios ?? [];
+          initialInput = {
+            ...initialInput,
+            scenarios: generateMonteCarloScenarios({
+              scenarios,
+              initialBalance: initialInput.initial_balance ?? 0,
+              annualContribution: initialInput.annual_contribution ?? 0,
+              years: initialInput.years ?? 0,
+              simulationConfig: effectiveSimulation,
+            }),
+          };
+        }
 
         // prefer worker, fall back to main thread
         let engine: any;
@@ -181,7 +199,7 @@ export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(funct
       cancelled = true;
       tearDown();
     };
-  }, [enabled, compiledResult.artifact_url, example?.id, executionConfig, canvasSig, disableWorker]);
+  }, [enabled, compiledResult.artifact_url, example?.id, executionConfig, canvasSig, simulationSig, disableWorker]);
 
   // if speed changes while playing, restart with new interval
   useEffect(() => {

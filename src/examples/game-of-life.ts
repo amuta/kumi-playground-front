@@ -32,10 +32,12 @@ export const gameOfLife: Example = {
 
   value :next_state, select(next_alive, 1, 0)
 end`,
+  // Visualization tab looks up this key to render the grid overlay.
   visualization_config: { outputs: { next_state: { type: 'grid', label: 'Simulation grid' } } },
   execution_config: {
     type: 'continuous',
     continuous: {
+      // Execute/Visualize tabs reuse these mappings to feed outputs back into inputs.
       feedback_mappings: [{ from_output: 'next_state', to_input: 'rows' }],
       playback_speed: 120, // steps per second
     },
@@ -43,7 +45,7 @@ end`,
   canvas_config: {
     render: 'grid2d',
     controls: {
-      // speed removed from canvas; keep geometry/seed here
+      // UI controls populate initial inputs when no base_input is provided.
       seed: { default: 42 },
       width: { default: 120 },
       height: { default: 80 },

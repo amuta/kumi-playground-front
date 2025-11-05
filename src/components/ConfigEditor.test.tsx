@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, test, expect, vi } from 'vitest';
 import { ConfigEditor } from './ConfigEditor';
-import type { ExecutionConfig, VisualizationConfig, CanvasConfig } from '@/types';
+import type { ExecutionConfig, VisualizationConfig, CanvasConfig, SimulationConfig } from '@/types';
 
 vi.mock('@monaco-editor/react', () => ({
   default: ({ value, onChange }: { value: string; onChange: (v: string | undefined) => void }) => (
@@ -25,20 +25,29 @@ describe('ConfigEditor', () => {
       seed: { default: 42 },
     },
   };
+  const defaultSimulationConfig: SimulationConfig = {
+    iterations: 10,
+    random_fields: {},
+    track_outputs: [],
+    seed: 123,
+  };
 
   test('renders JSON editor with combined config', () => {
     const onExecutionConfigChange = vi.fn();
     const onVisualizationConfigChange = vi.fn();
     const onCanvasConfigChange = vi.fn();
+    const onSimulationConfigChange = vi.fn();
 
     render(
       <ConfigEditor
         executionConfig={defaultExecutionConfig}
         visualizationConfig={defaultVisualizationConfig}
         canvasConfig={defaultCanvasConfig}
+        simulationConfig={defaultSimulationConfig}
         onExecutionConfigChange={onExecutionConfigChange}
         onVisualizationConfigChange={onVisualizationConfigChange}
         onCanvasConfigChange={onCanvasConfigChange}
+        onSimulationConfigChange={onSimulationConfigChange}
       />
     );
 
@@ -51,6 +60,7 @@ describe('ConfigEditor', () => {
       execution_config: defaultExecutionConfig,
       visualization_config: defaultVisualizationConfig,
       canvas_config: defaultCanvasConfig,
+      simulation_config: defaultSimulationConfig,
     });
   });
 
@@ -58,15 +68,18 @@ describe('ConfigEditor', () => {
     const onExecutionConfigChange = vi.fn();
     const onVisualizationConfigChange = vi.fn();
     const onCanvasConfigChange = vi.fn();
+    const onSimulationConfigChange = vi.fn();
 
     render(
       <ConfigEditor
         executionConfig={defaultExecutionConfig}
         visualizationConfig={defaultVisualizationConfig}
         canvasConfig={defaultCanvasConfig}
+        simulationConfig={defaultSimulationConfig}
         onExecutionConfigChange={onExecutionConfigChange}
         onVisualizationConfigChange={onVisualizationConfigChange}
         onCanvasConfigChange={onCanvasConfigChange}
+        onSimulationConfigChange={onSimulationConfigChange}
       />
     );
 
@@ -88,6 +101,11 @@ describe('ConfigEditor', () => {
           },
         },
       },
+      simulation_config: {
+        iterations: 25,
+        random_fields: {},
+        track_outputs: [],
+      },
       // canvas_config intentionally omitted here; component should tolerate it.
     };
 
@@ -96,21 +114,25 @@ describe('ConfigEditor', () => {
     expect(onExecutionConfigChange).toHaveBeenCalledWith(newConfig.execution_config);
     expect(onVisualizationConfigChange).toHaveBeenCalledWith(newConfig.visualization_config);
     expect(onCanvasConfigChange).not.toHaveBeenCalled();
+    expect(onSimulationConfigChange).toHaveBeenCalledWith(newConfig.simulation_config);
   });
 
   test('shows error message for invalid JSON', () => {
     const onExecutionConfigChange = vi.fn();
     const onVisualizationConfigChange = vi.fn();
     const onCanvasConfigChange = vi.fn();
+    const onSimulationConfigChange = vi.fn();
 
     render(
       <ConfigEditor
         executionConfig={defaultExecutionConfig}
         visualizationConfig={defaultVisualizationConfig}
         canvasConfig={defaultCanvasConfig}
+        simulationConfig={defaultSimulationConfig}
         onExecutionConfigChange={onExecutionConfigChange}
         onVisualizationConfigChange={onVisualizationConfigChange}
         onCanvasConfigChange={onCanvasConfigChange}
+        onSimulationConfigChange={onSimulationConfigChange}
       />
     );
 
@@ -122,21 +144,25 @@ describe('ConfigEditor', () => {
     expect(onExecutionConfigChange).not.toHaveBeenCalled();
     expect(onVisualizationConfigChange).not.toHaveBeenCalled();
     expect(onCanvasConfigChange).not.toHaveBeenCalled();
+    expect(onSimulationConfigChange).not.toHaveBeenCalled();
   });
 
   test('does not call onChange for partial valid JSON', () => {
     const onExecutionConfigChange = vi.fn();
     const onVisualizationConfigChange = vi.fn();
     const onCanvasConfigChange = vi.fn();
+    const onSimulationConfigChange = vi.fn();
 
     render(
       <ConfigEditor
         executionConfig={defaultExecutionConfig}
         visualizationConfig={defaultVisualizationConfig}
         canvasConfig={defaultCanvasConfig}
+        simulationConfig={defaultSimulationConfig}
         onExecutionConfigChange={onExecutionConfigChange}
         onVisualizationConfigChange={onVisualizationConfigChange}
         onCanvasConfigChange={onCanvasConfigChange}
+        onSimulationConfigChange={onSimulationConfigChange}
       />
     );
 
@@ -147,5 +173,6 @@ describe('ConfigEditor', () => {
     expect(onExecutionConfigChange).not.toHaveBeenCalled();
     expect(onVisualizationConfigChange).not.toHaveBeenCalled();
     expect(onCanvasConfigChange).not.toHaveBeenCalled();
+    expect(onSimulationConfigChange).not.toHaveBeenCalled();
   });
 });

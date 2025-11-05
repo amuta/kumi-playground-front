@@ -1,11 +1,10 @@
-// COPY-AND-REPLACE: ./src/components/SchemaTabContainer.tsx
 import { useState, forwardRef, useImperativeHandle, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ErrorNotification } from '@/components/ui/ErrorNotification';
 import { SchemaEditor, type SchemaEditorRef, type CompileErrorInfo } from '@/components/SchemaEditor';
 import { ConfigEditor } from '@/components/ConfigEditor';
 import type { CompileResponse } from '@/api/compile';
-import type { ExecutionConfig, VisualizationConfig, CanvasConfig } from '@/types';
+import type { ExecutionConfig, VisualizationConfig, CanvasConfig, SimulationConfig } from '@/types';
 
 interface SchemaTabContainerProps {
   schemaSource: string;
@@ -13,9 +12,11 @@ interface SchemaTabContainerProps {
   executionConfig: ExecutionConfig;
   visualizationConfig: VisualizationConfig;
   canvasConfig: CanvasConfig;
+  simulationConfig: SimulationConfig | null;
   onExecutionConfigChange: (config: ExecutionConfig) => void;
   onVisualizationConfigChange: (config: VisualizationConfig) => void;
   onCanvasConfigChange: (config: CanvasConfig) => void;
+  onSimulationConfigChange: (config: SimulationConfig | null) => void;
   onCompileSuccess: (result: CompileResponse) => void;
   onCompileError: (error: CompileErrorInfo) => void;
   onCompileStart?: () => void;
@@ -34,9 +35,11 @@ export const SchemaTabContainer = forwardRef<SchemaTabContainerRef, SchemaTabCon
       executionConfig,
       visualizationConfig,
       canvasConfig,
+      simulationConfig,
       onExecutionConfigChange,
       onVisualizationConfigChange,
       onCanvasConfigChange,
+      onSimulationConfigChange,
       onCompileSuccess,
       onCompileError,
       onCompileStart,
@@ -88,9 +91,11 @@ export const SchemaTabContainer = forwardRef<SchemaTabContainerRef, SchemaTabCon
                 executionConfig={executionConfig}
                 visualizationConfig={visualizationConfig}
                 canvasConfig={canvasConfig}
+                simulationConfig={simulationConfig}
                 onExecutionConfigChange={onExecutionConfigChange}
                 onVisualizationConfigChange={onVisualizationConfigChange}
                 onCanvasConfigChange={onCanvasConfigChange}
+                onSimulationConfigChange={onSimulationConfigChange}
               />
             </TabsContent>
           </div>

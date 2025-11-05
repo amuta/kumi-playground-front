@@ -1,30 +1,35 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { EditorView } from '@/components/EditorView';
-import type { ExecutionConfig, VisualizationConfig, CanvasConfig } from '@/types';
+import type { ExecutionConfig, VisualizationConfig, CanvasConfig, SimulationConfig } from '@/types';
 
 interface ConfigEditorProps {
   executionConfig: ExecutionConfig;
   visualizationConfig: VisualizationConfig;
   canvasConfig: CanvasConfig;
+  simulationConfig: SimulationConfig | null;
   onExecutionConfigChange: (config: ExecutionConfig) => void;
   onVisualizationConfigChange: (config: VisualizationConfig) => void;
   onCanvasConfigChange: (config: CanvasConfig) => void;
+  onSimulationConfigChange: (config: SimulationConfig | null) => void;
 }
 
 interface CombinedConfig {
   execution_config: ExecutionConfig;
   visualization_config: VisualizationConfig;
   canvas_config: CanvasConfig;
+  simulation_config?: SimulationConfig | null;
 }
 
 export function ConfigEditor({
   executionConfig,
   visualizationConfig,
   canvasConfig,
+  simulationConfig,
   onExecutionConfigChange,
   onVisualizationConfigChange,
   onCanvasConfigChange,
+  onSimulationConfigChange,
 }: ConfigEditorProps) {
   const [jsonValue, setJsonValue] = useState(() =>
     JSON.stringify(
@@ -32,6 +37,7 @@ export function ConfigEditor({
         execution_config: executionConfig,
         visualization_config: visualizationConfig,
         canvas_config: canvasConfig,
+        simulation_config: simulationConfig,
       },
       null,
       2
@@ -46,12 +52,13 @@ export function ConfigEditor({
           execution_config: executionConfig,
           visualization_config: visualizationConfig,
           canvas_config: canvasConfig,
+          simulation_config: simulationConfig,
         },
         null,
         2
       )
     );
-  }, [executionConfig, visualizationConfig, canvasConfig]);
+  }, [executionConfig, visualizationConfig, canvasConfig, simulationConfig]);
 
   const handleChange = (value: string | undefined) => {
     if (value === undefined) return;
@@ -61,6 +68,9 @@ export function ConfigEditor({
       if (parsed.execution_config) onExecutionConfigChange(parsed.execution_config);
       if (parsed.visualization_config) onVisualizationConfigChange(parsed.visualization_config);
       if (parsed.canvas_config) onCanvasConfigChange(parsed.canvas_config);
+      if (Object.prototype.hasOwnProperty.call(parsed, 'simulation_config')) {
+        onSimulationConfigChange(parsed.simulation_config ?? null);
+      }
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Invalid JSON');

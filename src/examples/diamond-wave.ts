@@ -30,6 +30,7 @@ end`,
     rows: Array.from({ length: 80 }, () => Array(120).fill(0)),
   },
   visualization_config: {
+    // Visualization tab renders this grid with the configured label.
     outputs: { next_state: { type: 'grid', label: 'Wave intensity' } },
   },
   execution_config: {
@@ -42,6 +43,7 @@ end`,
   },
   // optional: lets you resize via canvas controls
   canvas_config: {
+    // When base_input is absent, Execute/Visualize seed inputs from these defaults.
     render: 'grid2d',
     controls: { width: { default: 120 }, height: { default: 80 } },
   },

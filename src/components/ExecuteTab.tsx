@@ -7,13 +7,15 @@ import { ErrorNotification } from '@/components/ui/ErrorNotification';
 import { runAllOutputsFromUrl } from '@/execution/artifact-runner';
 import { applyFeedbackMappings } from '@/execution/feedback-loop';
 import type { CompileResponse } from '@/api/compile';
-import type { Example, ExecutionConfig } from '@/types';
+import type { Example, ExecutionConfig, SimulationConfig } from '@/types';
 import { makeBinaryGrid } from '@/input-gen/grid';
+import { generateMonteCarloScenarios } from '@/input-gen/monte-carlo';
 
 interface ExecuteTabProps {
   compiledResult: CompileResponse;
   example?: Example;
   executionConfig?: ExecutionConfig;
+  simulationConfig?: SimulationConfig;
   onExecuteStart?: () => void;
   onExecuteEnd?: () => void;
   hideInput?: boolean;
@@ -27,9 +29,27 @@ export interface ExecuteTabRef {
   isExecuting: boolean;
 }
 
-function deriveDefaultInput(example?: Example): Record<string, any> {
+function clone<T>(value: T): T {
+  return value ? JSON.parse(JSON.stringify(value)) : value;
+}
+
+function deriveDefaultInput(example?: Example, simulationConfig?: SimulationConfig | null): Record<string, any> {
   if (!example) return {};
-  if (example.base_input) return example.base_input;
+  const base = example.base_input ? clone(example.base_input) : {};
+
+  if (example.id === 'monte-carlo-simulation') {
+    const scenarios = base.scenarios ?? [];
+    base.scenarios = generateMonteCarloScenarios({
+      scenarios,
+      initialBalance: base.initial_balance ?? 0,
+      annualContribution: base.annual_contribution ?? 0,
+      years: base.years ?? 0,
+      simulationConfig,
+    });
+    return base;
+  }
+
+  if (example.base_input) return base;
   // Fallback for grid-based schemas without base_input (e.g., Game of Life)
   if (example.canvas_config?.render === 'grid2d') {
     const c = example.canvas_config.controls ?? {};
@@ -46,7 +66,18 @@ function deriveDefaultInput(example?: Example): Record<string, any> {
 }
 
 export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function ExecuteTab(
-  { compiledResult, example, executionConfig, onExecuteStart, onExecuteEnd, hideInput = false, onActiveSubTabChange, activeSubTab: externalActiveSubTab, onSetActiveSubTab },
+  {
+    compiledResult,
+    example,
+    executionConfig,
+    simulationConfig,
+    onExecuteStart,
+    onExecuteEnd,
+    hideInput = false,
+    onActiveSubTabChange,
+    activeSubTab: externalActiveSubTab,
+    onSetActiveSubTab,
+  },
   ref
 ) {
   const [inputValues, setInputValues] = useState<Record<string, any>>({});
@@ -65,10 +96,10 @@ export const ExecuteTab = forwardRef<ExecuteTabRef, ExecuteTabProps>(function Ex
 
   // Reset inputs when example or compiled artifact changes
   useEffect(() => {
-    setInputValues(deriveDefaultInput(example));
+    setInputValues(deriveDefaultInput(example, simulationConfig));
     setExecutionResult(null);
     setExecutionError(null);
-  }, [example?.id, compiledResult?.schema_hash]);
+  }, [example?.id, compiledResult?.schema_hash, simulationConfig]);
 
   const handleExecute = async () => {
     setIsExecuting(true);
