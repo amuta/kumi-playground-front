@@ -6,6 +6,7 @@ export const usFederalTax2024: Example = {
   title: 'US Tax 2024',
   mode: 'notebook',
   schema_src: `schema do
+  # Declarative tax model: compute brackets, FICA, and totals per filing status.
   input do
     float  :income
     float  :state_rate
@@ -28,59 +29,90 @@ export const usFederalTax2024: Example = {
     end
   end
 
-  # shared
-  let :big_hi, 100_000_000_000.0
-  let :state_tax, input.income * input.state_rate
-  let :local_tax, input.income * input.local_rate
+  # --- Shared scaffolding ---------------------------------------------------
+  let :gross_income, input.income
+  let :state_tax, gross_income * input.state_rate
+  let :local_tax, gross_income * input.local_rate
 
-  # FICA constants
+  # --- Filing status context ------------------------------------------------
+  let :status_name, input.statuses.status.name
+  let :status_std, input.statuses.status.std
+  let :status_addl_threshold, input.statuses.status.addl_threshold
+  let :taxable_income, fn(:max, [gross_income - status_std, 0])
+
+  # --- Federal brackets -----------------------------------------------------
+  let :bracket_lo, input.statuses.status.rates.bracket.lo
+  let :bracket_hi_raw, input.statuses.status.rates.bracket.hi
+  let :bracket_rate, input.statuses.status.rates.bracket.rate
+  let :bracket_is_open, bracket_hi_raw == -1
+  let :bracket_cap, select(bracket_is_open, taxable_income, bracket_hi_raw)
+  let :bracket_hi_for_clamp, fn(:max, [bracket_cap, bracket_lo])
+  let :taxable_in_bracket, fn(:clamp, taxable_income - bracket_lo, 0, bracket_hi_for_clamp - bracket_lo)
+  let :federal_tax_per_bracket, taxable_in_bracket * bracket_rate
+
+  value :federal_brackets, {
+    range: { lo: bracket_lo, hi: bracket_hi_raw, open_ended: bracket_is_open },
+    rate: bracket_rate,
+    taxable_amount: taxable_in_bracket,
+    tax: federal_tax_per_bracket
+  }
+
+  let :federal_tax_total, fn(:sum, federal_tax_per_bracket)
+  let :is_marginal_bracket, (taxable_income >= bracket_lo) & (taxable_income < bracket_hi_for_clamp)
+  let :federal_marginal_rate, fn(:sum_if, bracket_rate, is_marginal_bracket)
+  let :federal_effective_rate, federal_tax_total / fn(:max, [gross_income, 1.0])
+
+  # --- FICA -----------------------------------------------------------------
   let :ss_wage_base, 168_600.0
   let :ss_rate, 0.062
   let :med_base_rate, 0.0145
   let :addl_med_rate, 0.009
 
-  # per-status federal
-  let :taxable,   fn(:max, [input.income - input.statuses.status.std, 0])
-  let :lo,        input.statuses.status.rates.bracket.lo
-  let :hi,        input.statuses.status.rates.bracket.hi
-  let :rate,      input.statuses.status.rates.bracket.rate
-  let :hi_eff,    select(hi == -1, big_hi, hi)
-  let :amt,       fn(:clamp, taxable - lo, 0, hi_eff - lo)
-  let :fed_tax,   fn(:sum, amt * rate)
-  let :in_br,     (taxable >= lo) & (taxable < hi_eff)
-  let :fed_marg,  fn(:sum_if, rate, in_br)
-  let :fed_eff,   fed_tax / fn(:max, [input.income, 1.0])
+  let :social_security_tax, fn(:min, [gross_income, ss_wage_base]) * ss_rate
+  let :medicare_tax, gross_income * med_base_rate
+  let :medicare_surtax, fn(:max, [gross_income - status_addl_threshold, 0]) * addl_med_rate
+  let :fica_tax_total, social_security_tax + medicare_tax + medicare_surtax
+  let :fica_effective_rate, fica_tax_total / fn(:max, [gross_income, 1.0])
 
-  # per-status FICA
-  let :ss_tax,         fn(:min, [input.income, ss_wage_base]) * ss_rate
-  let :med_tax,        input.income * med_base_rate
-  let :addl_med_tax,   fn(:max, [input.income - input.statuses.status.addl_threshold, 0]) * addl_med_rate
-  let :fica_tax,       ss_tax + med_tax + addl_med_tax
-  let :fica_eff,       fica_tax / fn(:max, [input.income, 1.0])
+  # --- Totals & reporting ---------------------------------------------------
+  let :overall_tax, federal_tax_total + fica_tax_total + state_tax + local_tax
+  let :overall_effective_rate, overall_tax / fn(:max, [gross_income, 1.0])
+  let :after_tax_income, gross_income - overall_tax
+  let :take_home_income, after_tax_income - input.retirement_contrib
 
-  # totals per status
-  let :total_tax,  fed_tax + fica_tax + state_tax + local_tax
-  let :total_eff,  total_tax / fn(:max, [input.income, 1.0])
-  let :after_tax,  input.income - total_tax
-  let :take_home,  after_tax - input.retirement_contrib
-
-  # array of result objects, one per status
   value :summary, {
-    federal: { marginal: fed_marg, effective: fed_eff, tax: fed_tax },
-    fica:    { effective: fica_eff, tax: fica_tax },
-    state:   { marginal: input.state_rate, effective: input.state_rate, tax: state_tax },
-    local:   { marginal: input.local_rate, effective: input.local_rate, tax: local_tax },
-    total:   { effective: total_eff, tax: total_tax },
-    after_tax: after_tax,
-    retirement_contrib: input.retirement_contrib,
-    take_home: take_home
+    name: status_name,
+    taxable_income: taxable_income,
+    federal: {
+      marginal_rate: federal_marginal_rate,
+      effective_rate: federal_effective_rate,
+      tax: federal_tax_total
+    },
+    fica: {
+      effective_rate: fica_effective_rate,
+      tax: fica_tax_total,
+      components: {
+        social_security: social_security_tax,
+        medicare: medicare_tax,
+        medicare_surtax: medicare_surtax
+      }
+    },
+    state: { rate: input.state_rate, tax: state_tax },
+    local: { rate: input.local_rate, tax: local_tax },
+    totals: {
+      effective_rate: overall_effective_rate,
+      tax: overall_tax,
+      after_tax_income: after_tax_income,
+      take_home_income: take_home_income
+    },
+    retirement_contrib: input.retirement_contrib
   }
 end`,
   base_input: {
     income: 150000,
-    state_rate: 0.0,
-    local_rate: 0.0,
-    retirement_contrib: 0.0,
+    state_rate: 0.05,
+    local_rate: 0.015,
+    retirement_contrib: 6000,
     statuses: [
       {
         name: 'single',
