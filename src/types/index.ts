@@ -36,7 +36,14 @@ export type ExecutionConfig = {
 };
 
 export type VisualizationConfig = {
-  outputs: Record<string, { type: VisualizationType; grid?: { cell_render?: 'numeric' | 'boolean' | 'custom'; cell_map?: Record<string, string>; } }>;
+  outputs: Record<
+    string,
+    {
+      type: VisualizationType;
+      label?: string;
+      grid?: { cell_render?: 'numeric' | 'boolean' | 'custom'; cell_map?: Record<string, string> };
+    }
+  >;
 };
 
 export type SimulationConfig = {

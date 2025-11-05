@@ -7,7 +7,7 @@ describe('TableVisualizer', () => {
 
     render(<TableVisualizer name="numbers" value={value} />);
 
-    expect(screen.getByText('numbers:')).toBeInTheDocument();
+    expect(screen.getByText('numbers')).toBeInTheDocument();
     const pre = screen.getByRole('group');
     expect(pre).toHaveClass('font-mono');
   });
@@ -23,6 +23,6 @@ describe('TableVisualizer', () => {
   it('handles empty arrays', () => {
     render(<TableVisualizer name="empty" value={[]} />);
 
-    expect(screen.getByText('empty:')).toBeInTheDocument();
+    expect(screen.getByText('empty')).toBeInTheDocument();
   });
 });

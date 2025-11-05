@@ -3,9 +3,10 @@ import { useEffect, useRef } from 'react';
 interface GridVisualizerProps {
   name: string;
   value: any; // 2D array: rows x cols. Cells: 0/1 or 0..255 or any number
+  label?: string;
 }
 
-export function GridVisualizer({ name, value }: GridVisualizerProps) {
+export function GridVisualizer({ name, value, label }: GridVisualizerProps) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -92,10 +93,12 @@ export function GridVisualizer({ name, value }: GridVisualizerProps) {
     return () => ro?.disconnect();
   }, [value, is2D]);
 
+  const heading = label ?? name;
+
   if (!is2D) {
     return (
       <div>
-        <div className="font-medium mb-2">{name}:</div>
+        {heading ? <div className="font-medium mb-2">{heading}</div> : null}
         <p className="text-destructive text-sm">Cannot render as grid: expected 2D array</p>
       </div>
     );
@@ -103,18 +106,18 @@ export function GridVisualizer({ name, value }: GridVisualizerProps) {
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div className="font-medium mb-2">{name}:</div>
+      {heading ? <div className="font-medium mb-2">{heading}</div> : null}
       <div
         ref={wrapRef}
-        className="relative w-full h-[min(70vh,600px)] min-h-0 rounded overflow-hidden border border-border bg-muted/20 font-mono"
+        className="relative w-full flex-1 min-h-[240px] rounded overflow-hidden border border-border bg-muted/20 font-mono"
         role="group"
-        aria-label={`${name} grid`}
+        aria-label={`${heading || name} grid`}
       >
         <canvas
           ref={canvasRef}
           className="absolute inset-0 w-full h-full"
           role="img"
-          aria-label={`${name} canvas`}
+          aria-label={`${heading || name} canvas`}
         />
       </div>
     </div>

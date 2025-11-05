@@ -38,8 +38,21 @@ describe('OutputView with visualization registry', () => {
 
     render(<OutputView results={results} outputSchema={mockOutputSchema} example={example} />);
 
-    expect(screen.getByText('history:')).toBeInTheDocument();
+    expect(screen.getByText('history')).toBeInTheDocument();
     expect(screen.getByRole('group')).toBeInTheDocument(); // <pre role="group">
+  });
+
+  it('uses label from visualization config when provided', () => {
+    const results = { history: [1, 2] };
+    render(
+      <OutputView
+        results={results}
+        outputSchema={mockOutputSchema}
+        visualizationConfig={{ outputs: { history: { type: 'table', label: 'Score history' } } }}
+      />
+    );
+
+    expect(screen.getByText('Score history')).toBeInTheDocument();
   });
 
   it('falls back to JSON for invalid visualization type', () => {

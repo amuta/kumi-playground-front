@@ -212,7 +212,7 @@ export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(funct
   return (
     <div className="h-full min-h-0 p-6">
       <div className="h-full">
-        <Card className="shadow-lg border-2 h-full max-w-4xl mx-auto">
+        <Card className="shadow-lg border-2 h-full w-full">
           <CardContent className="pt-6 h-full flex flex-col">
             <div className="flex items-center justify-between mb-4 shrink-0">
               <div className="text-sm text-muted-foreground">
@@ -246,6 +246,7 @@ export const VisualizeTab = forwardRef<VisualizeTabRef, VisualizeTabProps>(funct
                   outputSchema={compiledResult.output_schema}
                   example={example}
                   visualizationConfig={visualizationConfig}
+                  showJson={false}
                 />
               </div>
             ) : (

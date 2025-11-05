@@ -7,7 +7,7 @@ describe('GridVisualizer', () => {
 
     render(<GridVisualizer name="matrix" value={value} />);
 
-    expect(screen.getByText('matrix:')).toBeInTheDocument();
+    expect(screen.getByText('matrix')).toBeInTheDocument();
     const pre = screen.getByRole('group');
     expect(pre).toHaveClass('font-mono');
   });

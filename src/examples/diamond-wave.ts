@@ -30,7 +30,7 @@ end`,
     rows: Array.from({ length: 80 }, () => Array(120).fill(0)),
   },
   visualization_config: {
-    outputs: { next_state: { type: 'grid' } },
+    outputs: { next_state: { type: 'grid', label: 'Wave intensity' } },
   },
   execution_config: {
     type: 'continuous',

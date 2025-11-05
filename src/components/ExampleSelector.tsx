@@ -35,7 +35,12 @@ export function ExampleSelector({
         </SelectTrigger>
         <SelectContent>
           {examples.map((example) => (
-            <SelectItem key={example.id} value={example.id}>
+            <SelectItem
+              key={example.id}
+              value={example.id}
+              indicator={false}
+              className="data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground data-[state=checked]:font-semibold"
+            >
               {example.title}
             </SelectItem>
           ))}

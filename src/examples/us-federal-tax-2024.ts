@@ -108,6 +108,11 @@ export const usFederalTax2024: Example = {
     retirement_contrib: input.retirement_contrib
   }
 end`,
+  visualization_config: {
+    outputs: {
+      federal_brackets: { type: 'table', label: 'Federal bracket detail' },
+    },
+  },
   base_input: {
     income: 150000,
     state_rate: 0.05,

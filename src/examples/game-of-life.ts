@@ -32,7 +32,7 @@ export const gameOfLife: Example = {
 
   value :next_state, select(next_alive, 1, 0)
 end`,
-  visualization_config: { outputs: { next_state: { type: 'grid' } } },
+  visualization_config: { outputs: { next_state: { type: 'grid', label: 'Simulation grid' } } },
   execution_config: {
     type: 'continuous',
     continuous: {
